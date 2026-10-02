@@ -6,3 +6,6 @@ dist/
 .env.*.local
 *.log
 *.zip
+
+.vercel
+.env*
