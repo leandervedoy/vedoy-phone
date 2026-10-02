@@ -1,10 +1,10 @@
 import {Router} from 'express';
 import {z} from 'zod';
-import twilio,{jwt} from 'twilio';
+import twilio from 'twilio';
 import {db,twilioClient} from './clients.js';
 import {env} from './config.js';
 import {asyncRoute,destinationAllowed,e164,validateTwilio} from './http.js';
-const {AccessToken}=jwt;
+const {AccessToken}=twilio.jwt;
 export const voice=Router();
 voice.post('/token',asyncRoute(async(req,res)=>{const platform=req.body?.platform==='ios'?'ios':req.body?.platform==='android'?'android':null;if(!platform)return res.status(400).json({message:'Enhetsplattform mangler.'});const identity=`v_${req.userId!.replace(/-/g,'')}`;const token=new AccessToken(env.TWILIO_ACCOUNT_SID,env.TWILIO_API_KEY,env.TWILIO_API_SECRET,{identity,ttl:3600});const pushCredentialSid=platform==='ios'?env.TWILIO_IOS_PUSH_CREDENTIAL_SID:env.TWILIO_ANDROID_PUSH_CREDENTIAL_SID;token.addGrant(new AccessToken.VoiceGrant({outgoingApplicationSid:env.TWILIO_TWIML_APP_SID,incomingAllow:!!pushCredentialSid,...(pushCredentialSid?{pushCredentialSid}:{})}));res.json({token:token.toJwt(),identity,expiresIn:3600,incomingConfigured:!!pushCredentialSid})}));
 voice.get('/history',asyncRoute(async(req,res)=>{const {data,error}=await db.from('call_events').select('call_sid,status,direction,from_number,to_number,duration_seconds,updated_at').eq('user_id',req.userId!).order('updated_at',{ascending:false}).limit(100);if(error)throw error;res.json({calls:data??[]})}));
