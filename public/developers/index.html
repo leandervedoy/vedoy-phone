@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vedoy Developer Portal</title>
+  <meta name="description" content="Vedoy Developer Portal for Voice, SMS, Numbers, KYC, Supabase and deployment APIs.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #050705;
+      --ink: #f4f7f1;
+      --muted: #aab5aa;
+      --dim: #667367;
+      --line: rgba(244, 247, 241, .14);
+      --panel: #101510;
+      --panel-2: #151d17;
+      --green: #b7f36b;
+      --green-2: #6fdb64;
+      --amber: #f3c66b;
+      --blue: #80c8ff;
+      --violet: #a78bfa;
+      --red: #ff6b69;
+      --shadow: 0 24px 80px rgba(0, 0, 0, .45);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(183, 243, 107, .14), transparent 36rem),
+        linear-gradient(180deg, #070a07 0%, #050705 58%, #0a0f0b 100%);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem clamp(1rem, 3vw, 2rem);
+      background: rgba(5, 7, 5, .74);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .72rem;
+      font-weight: 900;
+    }
+
+    .mark {
+      width: 2.35rem;
+      aspect-ratio: 1;
+      border: 1px solid rgba(183, 243, 107, .5);
+      border-radius: .7rem;
+      background: linear-gradient(135deg, rgba(183, 243, 107, .95), rgba(111, 219, 100, .18));
+      display: grid;
+      place-items: center;
+      color: #071006;
+      box-shadow: 0 0 32px rgba(183, 243, 107, .18);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .nav-links a {
+      padding: .7rem .86rem;
+      border-radius: .6rem;
+    }
+
+    .nav-links a:hover { background: rgba(255,255,255,.06); color: var(--ink); }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.85rem;
+      padding: 0 1.05rem;
+      border: 1px solid rgba(183, 243, 107, .62);
+      border-radius: .7rem;
+      background: var(--green);
+      color: #071006;
+      font-weight: 900;
+      box-shadow: 0 12px 34px rgba(183, 243, 107, .18);
+    }
+
+    .ghost {
+      background: rgba(255,255,255,.06);
+      color: var(--ink);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    main { overflow: hidden; }
+
+    .hero {
+      min-height: calc(100svh - 4.5rem);
+      display: grid;
+      align-items: center;
+      padding: clamp(3rem, 7vw, 6.4rem) clamp(1rem, 5vw, 5rem) 2rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(19rem, .78fr);
+      gap: clamp(2rem, 5vw, 5rem);
+      align-items: center;
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      color: var(--green);
+      font-size: .82rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      margin: 0 0 1rem;
+    }
+
+    h1 {
+      max-width: 12ch;
+      margin: 0;
+      font-size: clamp(4rem, 13vw, 10.5rem);
+      line-height: .84;
+      letter-spacing: 0;
+      text-wrap: balance;
+    }
+
+    .lead {
+      max-width: 42rem;
+      margin: 1.35rem 0 0;
+      color: var(--muted);
+      font-size: clamp(1.08rem, 1.8vw, 1.44rem);
+      line-height: 1.45;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .8rem;
+      margin-top: 2rem;
+    }
+
+    .hero-panel {
+      position: relative;
+      min-height: 31rem;
+      border: 1px solid var(--line);
+      border-radius: .75rem;
+      background: linear-gradient(180deg, rgba(22, 29, 23, .96), rgba(9, 12, 9, .92));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .timeline-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .playhead {
+      width: .74rem;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 .45rem rgba(183, 243, 107, .13);
+    }
+
+    .timeline {
+      padding: 1rem;
+      display: grid;
+      gap: .8rem;
+    }
+
+    .track {
+      min-height: 5.8rem;
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: .62rem;
+      background: rgba(255,255,255,.035);
+      padding: .8rem;
+      display: grid;
+      grid-template-columns: 5rem 1fr;
+      gap: .8rem;
+      align-items: center;
+    }
+
+    .track-label {
+      color: var(--dim);
+      font-weight: 800;
+      font-size: .78rem;
+      text-transform: uppercase;
+    }
+
+    .clips {
+      display: flex;
+      gap: .55rem;
+      min-width: 0;
+    }
+
+    .clip {
+      min-height: 3.45rem;
+      border-radius: .55rem;
+      border: 1px solid rgba(255,255,255,.13);
+      padding: .72rem;
+      color: #071006;
+      font-weight: 900;
+      display: flex;
+      align-items: end;
+      flex: 1;
+      min-width: 4.8rem;
+    }
+
+    .voice { background: linear-gradient(135deg, var(--green), #e2ffae); }
+    .sms { background: linear-gradient(135deg, var(--blue), #d4f0ff); }
+    .kyc { background: linear-gradient(135deg, var(--amber), #ffefb8); }
+    .hooks { background: linear-gradient(135deg, var(--violet), #eadfff); }
+
+    .floating-code {
+      position: absolute;
+      right: 1rem;
+      bottom: 1rem;
+      left: 1rem;
+      border: 1px solid rgba(183, 243, 107, .26);
+      border-radius: .7rem;
+      background: rgba(4, 8, 5, .72);
+      backdrop-filter: blur(14px);
+      color: var(--green);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: .82rem;
+      line-height: 1.55;
+      padding: 1rem;
+    }
+
+    .marquee {
+      display: flex;
+      gap: 1rem;
+      width: max-content;
+      padding: 1rem 0;
+      animation: slide 36s linear infinite;
+    }
+
+    .belt {
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+      background: rgba(255,255,255,.025);
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: .82rem 1.2rem;
+      color: var(--muted);
+      background: rgba(255,255,255,.035);
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    @keyframes slide { to { transform: translateX(-50%); } }
+
+    section {
+      width: min(1180px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: clamp(4rem, 7vw, 7rem) 0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, .75fr) minmax(18rem, .55fr);
+      gap: 2rem;
+      align-items: end;
+      margin-bottom: 1.2rem;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(2.4rem, 6vw, 6rem);
+      line-height: .95;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      line-height: 1.55;
+      margin: 0;
+      font-size: 1.04rem;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .55rem;
+      margin: 2rem 0 1rem;
+    }
+
+    .filter {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+      border-radius: 999px;
+      min-height: 2.5rem;
+      padding: 0 .95rem;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .filter[aria-pressed="true"] {
+      background: var(--ink);
+      color: #070a07;
+    }
+
+    .api-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .api-card, .stack-card, .status-card {
+      border: 1px solid var(--line);
+      border-radius: .75rem;
+      background: linear-gradient(180deg, rgba(20, 27, 21, .96), rgba(11, 15, 12, .96));
+      box-shadow: 0 10px 44px rgba(0,0,0,.25);
+      padding: 1rem;
+    }
+
+    .api-card {
+      min-height: 17rem;
+      display: flex;
+      flex-direction: column;
+      gap: .9rem;
+    }
+
+    .method {
+      display: inline-flex;
+      width: fit-content;
+      border-radius: .42rem;
+      padding: .34rem .48rem;
+      font: 900 .72rem "SFMono-Regular", Consolas, monospace;
+      color: #071006;
+      background: var(--green);
+    }
+
+    .method.post { background: var(--blue); }
+    .method.delete { background: var(--red); color: #150202; }
+    .method.patch { background: var(--amber); }
+    .method.webhook { background: var(--violet); }
+
+    .route {
+      font-family: "SFMono-Regular", Consolas, monospace;
+      color: var(--ink);
+      font-size: .96rem;
+      overflow-wrap: anywhere;
+    }
+
+    .api-card p, .stack-card p, .status-card p {
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .tag-row { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: auto; }
+    .tag {
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 999px;
+      color: var(--dim);
+      padding: .36rem .55rem;
+      font-size: .76rem;
+      font-weight: 800;
+    }
+
+    .stack {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .stack-card strong, .status-card strong {
+      display: block;
+      font-size: 1.12rem;
+      margin-bottom: .55rem;
+    }
+
+    .status {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .status-card {
+      display: grid;
+      gap: .8rem;
+    }
+
+    .status-line {
+      display: grid;
+      grid-template-columns: 8rem 1fr;
+      gap: .8rem;
+      align-items: baseline;
+      padding-top: .8rem;
+      border-top: 1px solid rgba(255,255,255,.09);
+    }
+
+    .status-line span:first-child {
+      color: var(--dim);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: .75rem;
+    }
+
+    .footer {
+      width: min(1180px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2rem 0 3rem;
+      border-top: 1px solid var(--line);
+      color: var(--dim);
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .hero-grid, .section-head, .status { grid-template-columns: 1fr; }
+      .api-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero-panel { min-height: 28rem; }
+      .track { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .api-grid, .stack { grid-template-columns: 1fr; }
+      .hero { padding-top: 2.2rem; }
+      h1 { font-size: clamp(3.4rem, 18vw, 5.7rem); }
+      .floating-code { position: static; margin: 1rem; }
+      .hero-panel { min-height: auto; }
+      .clips { flex-wrap: wrap; }
+      .status-line { grid-template-columns: 1fr; gap: .25rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="Hovednavigasjon">
+    <a class="brand" href="#">
+      <span class="mark" aria-hidden="true">↗</span>
+      <span>Vedoy Developer</span>
+    </a>
+    <div class="nav-links">
+      <a href="#apis">API-er</a>
+      <a href="#stack">Stack</a>
+      <a href="#status">Status</a>
+    </div>
+    <a class="cta" href="#apis">Se API-er</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">Vedoy Connect API</p>
+          <h1>Build with signal.</h1>
+          <p class="lead">Et developer portal-lag for Vedoy sine mobil- og kommunikasjons-API-er: Voice, SMS, nummerbutikk, KYC, webhooks, Supabase-data og produksjonsdeploy.</p>
+          <div class="actions">
+            <a class="cta" href="#apis">Utforsk blokker</a>
+            <a class="cta ghost" href="https://github.com/leandervedoy/vedoy-phone#readme">Les README</a>
+          </div>
+        </div>
+        <div class="hero-panel" aria-label="Vedoy API timeline preview">
+          <div class="timeline-top">
+            <span>Vedoy timeline</span>
+            <span class="playhead" aria-hidden="true"></span>
+          </div>
+          <div class="timeline">
+            <div class="track">
+              <div class="track-label">Voice</div>
+              <div class="clips"><div class="clip voice">Token</div><div class="clip voice">Call</div></div>
+            </div>
+            <div class="track">
+              <div class="track-label">SMS</div>
+              <div class="clips"><div class="clip sms">Threads</div><div class="clip sms">Send</div><div class="clip sms">STOP</div></div>
+            </div>
+            <div class="track">
+              <div class="track-label">Numbers</div>
+              <div class="clips"><div class="clip kyc">Search</div><div class="clip kyc">Price</div><div class="clip kyc">Buy</div></div>
+            </div>
+            <div class="track">
+              <div class="track-label">Hooks</div>
+              <div class="clips"><div class="clip hooks">Voice</div><div class="clip hooks">SMS</div></div>
+            </div>
+          </div>
+          <pre class="floating-code">curl -H "Authorization: Bearer $SUPABASE_JWT" \
+  https://api.vedoy.example/v1/numbers/countries</pre>
+        </div>
+      </div>
+    </header>
+
+    <div class="belt" aria-label="Vedoy API categories">
+      <div class="marquee">
+        <span class="pill">Voice SDK tokens</span>
+        <span class="pill">Global SMS threads</span>
+        <span class="pill">Number search</span>
+        <span class="pill">KYC workflow</span>
+        <span class="pill">Twilio webhooks</span>
+        <span class="pill">Supabase Auth</span>
+        <span class="pill">Vercel deploy</span>
+        <span class="pill">Voice SDK tokens</span>
+        <span class="pill">Global SMS threads</span>
+        <span class="pill">Number search</span>
+        <span class="pill">KYC workflow</span>
+        <span class="pill">Twilio webhooks</span>
+        <span class="pill">Supabase Auth</span>
+        <span class="pill">Vercel deploy</span>
+      </div>
+    </div>
+
+    <section id="apis">
+      <div class="section-head">
+        <h2>API blocks for the whole call stack.</h2>
+        <p>Dette er hentet fra Vedoy Connect-serveren i prosjektet. Alle `/v1`-ruter krever Supabase JWT. Twilio-webhooks valideres med signatur og bruker serverens offentlige base-URL.</p>
+      </div>
+
+      <div class="filters" role="toolbar" aria-label="Filtrer API-er">
+        <button class="filter" data-filter="all" aria-pressed="true">Alle</button>
+        <button class="filter" data-filter="voice">Voice</button>
+        <button class="filter" data-filter="sms">SMS</button>
+        <button class="filter" data-filter="numbers">Numbers</button>
+        <button class="filter" data-filter="kyc">KYC</button>
+        <button class="filter" data-filter="webhook">Webhooks</button>
+      </div>
+
+      <div class="api-grid" id="apiGrid">
+        <article class="api-card" data-kind="system"><span class="method">GET</span><strong class="route">/health</strong><p>Readiness endpoint for the Node API. Returns service name and `ok: true`.</p><div class="tag-row"><span class="tag">public</span><span class="tag">monitoring</span></div></article>
+        <article class="api-card" data-kind="voice"><span class="method post">POST</span><strong class="route">/v1/voice/token</strong><p>Vends short-lived Twilio Voice access tokens for iOS or Android development builds.</p><div class="tag-row"><span class="tag">Supabase JWT</span><span class="tag">Twilio server secret</span></div></article>
+        <article class="api-card" data-kind="voice"><span class="method">GET</span><strong class="route">/v1/voice/history</strong><p>Lists call events stored from Twilio status callbacks for the signed-in user.</p><div class="tag-row"><span class="tag">calls</span><span class="tag">RLS-backed</span></div></article>
+        <article class="api-card" data-kind="sms"><span class="method">GET</span><strong class="route">/v1/messages/threads</strong><p>Builds the SMS inbox thread list from inbound and outbound message rows.</p><div class="tag-row"><span class="tag">threads</span><span class="tag">two-way SMS</span></div></article>
+        <article class="api-card" data-kind="sms"><span class="method">GET</span><strong class="route">/v1/messages/threads/:phone</strong><p>Returns up to 200 messages with one recipient or sender in chronological order.</p><div class="tag-row"><span class="tag">E.164</span><span class="tag">conversation</span></div></article>
+        <article class="api-card" data-kind="sms"><span class="method post">POST</span><strong class="route">/v1/messages</strong><p>Sends outbound SMS from an active Vedoy line, with country allowlist, per-minute cap and opt-out checks.</p><div class="tag-row"><span class="tag">rate limited</span><span class="tag">STOP aware</span></div></article>
+        <article class="api-card" data-kind="numbers"><span class="method">GET</span><strong class="route">/v1/numbers/countries</strong><p>Combines ISO countries with the account-scoped Twilio AvailablePhoneNumbers catalog and Vedoy outbound policy.</p><div class="tag-row"><span class="tag">country matrix</span><span class="tag">live catalog</span></div></article>
+        <article class="api-card" data-kind="numbers"><span class="method">GET</span><strong class="route">/v1/numbers/countries/:code/capabilities</strong><p>Checks which number classes exist for a country and shows sample voice, SMS, MMS and address requirements.</p><div class="tag-row"><span class="tag">local</span><span class="tag">mobile</span><span class="tag">tollFree</span></div></article>
+        <article class="api-card" data-kind="numbers"><span class="method">GET</span><strong class="route">/v1/numbers/countries/:code/pricing</strong><p>Fetches monthly Twilio number pricing via server-side Pricing API credentials.</p><div class="tag-row"><span class="tag">price check</span><span class="tag">currency</span></div></article>
+        <article class="api-card" data-kind="numbers"><span class="method">GET</span><strong class="route">/v1/numbers/available</strong><p>Searches live Twilio inventory for local, mobile or toll-free numbers, optionally with a pattern.</p><div class="tag-row"><span class="tag">number shop</span><span class="tag">Twilio</span></div></article>
+        <article class="api-card" data-kind="numbers"><span class="method post">POST</span><strong class="route">/v1/numbers/purchase</strong><p>Purchases a confirmed available number after price re-check, quota lock and KYC requirement validation.</p><div class="tag-row"><span class="tag">atomic reserve</span><span class="tag">compliance gate</span></div></article>
+        <article class="api-card" data-kind="numbers"><span class="method delete">DELETE</span><strong class="route">/v1/numbers/mine/:id</strong><p>Releases an active Twilio number owned by the user and marks it released in Supabase.</p><div class="tag-row"><span class="tag">account</span><span class="tag">billing stop</span></div></article>
+        <article class="api-card" data-kind="kyc"><span class="method post">POST</span><strong class="route">/v1/kyc/submissions</strong><p>Registers identity, address proof or business registration files already uploaded to the private KYC bucket.</p><div class="tag-row"><span class="tag">private storage</span><span class="tag">pending review</span></div></article>
+        <article class="api-card" data-kind="kyc"><span class="method">GET</span><strong class="route">/v1/kyc/status</strong><p>Shows the signed-in user's recent KYC submissions and review status.</p><div class="tag-row"><span class="tag">user status</span><span class="tag">RLS</span></div></article>
+        <article class="api-card" data-kind="kyc"><span class="method patch">PATCH</span><strong class="route">/v1/kyc/submissions/:id/review</strong><p>Admin-only review route that requires Twilio address SID and completed compliance mapping before approval.</p><div class="tag-row"><span class="tag">admin</span><span class="tag">regulatory</span></div></article>
+        <article class="api-card" data-kind="webhook"><span class="method webhook">POST</span><strong class="route">/webhooks/twilio/voice</strong><p>Validated Twilio Voice webhook for outbound client dialing and inbound calls to the user's Voice identity.</p><div class="tag-row"><span class="tag">TwiML</span><span class="tag">signature</span></div></article>
+        <article class="api-card" data-kind="webhook"><span class="method webhook">POST</span><strong class="route">/webhooks/twilio/voice/status</strong><p>Stores call status, direction, participants and duration as call events.</p><div class="tag-row"><span class="tag">call events</span><span class="tag">upsert</span></div></article>
+        <article class="api-card" data-kind="webhook"><span class="method webhook">POST</span><strong class="route">/webhooks/twilio/sms/inbound</strong><p>Stores inbound SMS and records STOP-style opt-outs for future sends.</p><div class="tag-row"><span class="tag">inbound SMS</span><span class="tag">STOP</span></div></article>
+        <article class="api-card" data-kind="webhook"><span class="method webhook">POST</span><strong class="route">/webhooks/twilio/sms/status</strong><p>Updates message delivery status and Twilio error code for outbound messages.</p><div class="tag-row"><span class="tag">delivery</span><span class="tag">webhook</span></div></article>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="section-head">
+        <h2>Built like a product, documented like a toolkit.</h2>
+        <p>Portalens rolle er å gjøre Vedoy Connect lett å forstå for utviklere, drift og kunder uten å eksponere hemmeligheter.</p>
+      </div>
+      <div class="stack">
+        <article class="stack-card"><strong>Expo mobile</strong><p>Development build, Voice SDK support, dark industrial Vedoy UI and mobile app shortcuts.</p></article>
+        <article class="stack-card"><strong>Node API</strong><p>Express, TypeScript, helmet, CORS, rate limits and webhook validation.</p></article>
+        <article class="stack-card"><strong>Supabase</strong><p>Auth JWTs, RLS-backed tables, private KYC storage and server-side service role only.</p></article>
+        <article class="stack-card"><strong>Vercel ready</strong><p>Static portal and API docs can be published as a preview or production deployment when project binding exists.</p></article>
+      </div>
+    </section>
+
+    <section id="status">
+      <div class="section-head">
+        <h2>Live state stays honest.</h2>
+        <p>Dette feltet er bevisst tydelig: siden viser hva koden støtter lokalt, og hva som må kobles før den kan kalles live.</p>
+      </div>
+      <div class="status">
+        <article class="status-card">
+          <strong>Local source</strong>
+          <p>API-listen kommer fra `outputs/server/src` og Supabase-migrasjonen i dette prosjektet.</p>
+          <div class="status-line"><span>Backend</span><span>Implementert, ikke bekreftet deployet fra denne mappen.</span></div>
+          <div class="status-line"><span>Database</span><span>Schema finnes lokalt. Live Supabase project id trengs for å hente faktisk tabellstatus.</span></div>
+          <div class="status-line"><span>Secrets</span><span>Twilio og Supabase service role skal fortsatt ligge server-side.</span></div>
+        </article>
+        <article class="status-card">
+          <strong>Production gates</strong>
+          <p>Før kjøp, SMS og samtaler aktiveres offentlig må eksterne systemer kobles og testes.</p>
+          <div class="status-line"><span>Vercel</span><span>Krev `.vercel/project.json` eller valgt project id før deployment.</span></div>
+          <div class="status-line"><span>Twilio</span><span>Webhook-URL, Voice app, geo permissions, push credentials and regulatory mapping.</span></div>
+          <div class="status-line"><span>Billing</span><span>Twilio-kostnader håndteres, men kundeabonnement/invoice-flow er ikke lagt inn.</span></div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Vedoy Developer Portal</span>
+    <span>Local artifact · 2026-10-02</span>
+  </footer>
+
+  <script>
+    const filters = Array.from(document.querySelectorAll('.filter'));
+    const cards = Array.from(document.querySelectorAll('.api-card'));
+    filters.forEach((button) => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+        filters.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        cards.forEach((card) => {
+          const visible = filter === 'all' || card.dataset.kind === filter;
+          card.style.display = visible ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>
