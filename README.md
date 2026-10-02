@@ -18,8 +18,8 @@ The Vercel deployment serves the static website only. It does not run `server/`,
 
 1. Install Node.js 20 LTS and copy `server/.env.example` to `server/.env`.
 2. Configure Twilio API credentials, a Voice Application SID, Supabase project URL and service key on the server only.
-3. Apply `supabase/migrations/202610010001_initial.sql` in the Supabase SQL editor or Supabase CLI.
-   If upgrading an existing database that already has `sms_opt_outs`, also apply `supabase/migrations/202610020001_sms_opt_out_per_line.sql`.
+3. Apply `supabase/migrations/202610010001_initial.sql` only to a dedicated Vedoy Phone Supabase project. The existing shared Vedoy Supabase project already has `vedoy_comm_*` communication tables with a different schema; do not apply this starter migration there before implementing and reviewing a schema adapter. See `docs/supabase-integration.md`.
+   If upgrading a dedicated database that already has `sms_opt_outs`, also apply `supabase/migrations/202610020001_sms_opt_out_per_line.sql`.
 4. In `server/`, run `npm install`, `npm run dev`.
 5. In `mobile/`, set `EXPO_PUBLIC_API_URL` to the HTTPS API origin, run `npm install`, then `npx expo prebuild` and `npx expo run:ios` or `npx expo run:android`.
 
