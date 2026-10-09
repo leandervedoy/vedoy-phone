@@ -9,6 +9,7 @@ Vedoy Phone is an Expo development-build app and Node/TypeScript communications 
 - `server/migrations/` additive phone schema migrations
 - `public/` product website
 - `docs/country-capabilities.md` how to interpret the live country catalog
+- `docs/provider-configuration.md` Neon, Twilio, and Telnyx server configuration
 - `docs/open-source-review.md` comparison with Twilio's Voice React Native reference architecture
 
 The phone service uses a separate `phone` schema and a `phone/` object prefix inside the existing Neon project. Developer tables and objects are left intact. The production branch already has Neon Auth and a private `uploads` bucket. KYC files are sent through the authenticated Node service and stored in that bucket; provider credentials stay on the server.
