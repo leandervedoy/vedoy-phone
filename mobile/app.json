@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Vedoy Connect", "slug": "vedoy-connect", "scheme": "vedoyconnect", "version": "1.0.0", "orientation": "portrait", "userInterfaceStyle": "dark",
+    "name": "Vedoy Phone", "slug": "vedoy-phone", "scheme": "vedoyphone", "version": "1.0.0", "orientation": "portrait", "userInterfaceStyle": "dark",
     "plugins": ["expo-router", "expo-secure-store", "@twilio/voice-react-native-sdk", ["expo-image-picker", {"photosPermission":"Vedoy uses selected images as identity or address documents when you submit a verification request.","cameraPermission":"Vedoy uses the camera to capture identity or address documents you choose to submit."}], ["expo-build-properties", {"ios":{"deploymentTarget":"16.4"},"android":{"minSdkVersion":24}}]],
     "ios": { "supportsTablet": true, "bundleIdentifier": "no.vedoy.connect", "infoPlist": {"UIBackgroundModes":["audio","voip","remote-notification"]} },
     "android": { "package":"no.vedoy.connect", "permissions":["RECORD_AUDIO","READ_PHONE_STATE","FOREGROUND_SERVICE","POST_NOTIFICATIONS"] },

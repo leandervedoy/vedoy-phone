@@ -1,8 +1,19 @@
 import React,{useState} from 'react';
-import { Alert,ScrollView,Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import { supabase } from '../lib/supabase';
-import { Button,Card,Field,PageTitle } from '../components/ui';
-import { theme as t } from '../theme';
-export default function Auth(){const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [busy,setBusy]=useState(false);async function submit(signUp=false){if(!supabase){Alert.alert('Tilkobling mangler','Konfigurer Supabase URL og publishable key i appens miljø.');return}setBusy(true);const result=signUp?await supabase.auth.signUp({email,password}):await supabase.auth.signInWithPassword({email,password});setBusy(false);if(result.error){Alert.alert('Kunne ikke logge inn',result.error.message);return}if(signUp&&!result.data.session){Alert.alert('Sjekk e-posten din','Bekreft adressen din før du logger inn.');return}router.replace('/(tabs)')}return <SafeAreaView style={{flex:1,backgroundColor:t.color.bg}}><ScrollView contentContainerStyle={{padding:24,flexGrow:1,justifyContent:'center',gap:18}}><PageTitle eyebrow="VEDOY CONNECT" title="Alt på linje." sub="Logg inn for å koble til numrene og meldingene dine."/><Card style={{gap:13}}><Field value={email} onChangeText={setEmail} placeholder="E-post" keyboardType="email-address"/><Field value={password} onChangeText={setPassword} placeholder="Passord"/><Button title="Logg inn" onPress={()=>submit(false)} loading={busy}/><Button title="Opprett konto" onPress={()=>submit(true)} secondary disabled={busy}/></Card><Text style={{color:t.color.dim,textAlign:'center'}}>Samtaler og meldinger lagres sikkert på kontoen.</Text></ScrollView></SafeAreaView>}
+import {Alert,ScrollView,Text} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {router} from 'expo-router';
+import {authClient} from '../lib/auth';
+import {Button,Card,Field,PageTitle} from '../components/ui';
+import {theme as t} from '../theme';
+
+export default function Auth(){
+ const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [busy,setBusy]=useState(false);
+ async function submit(signUp=false){setBusy(true);try{
+  const result=signUp?await authClient.signUp.email({email,password,name:email.split('@')[0]??'Vedoy user'}):await authClient.signIn.email({email,password});
+  if(result.error){Alert.alert('Kunne ikke logge inn',result.error.message);return}
+  const current=await authClient.getSession();
+  if(!current.data?.session){Alert.alert('Sjekk e-posten din','Bekreft e-postadressen før du logger inn.');return}
+  router.replace('/(tabs)');
+ }catch(e){Alert.alert('Kunne ikke logge inn',e instanceof Error?e.message:'Prøv igjen senere.')}finally{setBusy(false)}}
+ return <SafeAreaView style={{flex:1,backgroundColor:t.color.bg}}><ScrollView contentContainerStyle={{padding:24,flexGrow:1,justifyContent:'center',gap:18}}><PageTitle eyebrow="VEDOY PHONE" title="Alt på linje." sub="Logg inn for å koble til numrene og meldingene dine."/><Card style={{gap:13}}><Field value={email} onChangeText={setEmail} placeholder="E-post" keyboardType="email-address"/><Field value={password} onChangeText={setPassword} placeholder="Passord"/><Button title="Logg inn" onPress={()=>submit(false)} loading={busy}/><Button title="Opprett konto" onPress={()=>submit(true)} secondary disabled={busy}/></Card><Text style={{color:t.color.dim,textAlign:'center'}}>Samtaler og meldinger lagres sikkert på kontoen.</Text></ScrollView></SafeAreaView>
+}

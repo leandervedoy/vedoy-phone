@@ -25,7 +25,7 @@ app.use(cors({ origin: (origin, callback) => {
 }, credentials: true }));
 app.use('/webhooks/twilio', express.urlencoded({ extended: false, limit: '64kb' }));
 app.use(express.json({ limit: '32kb' }));
-app.get('/health', (_req, res) => res.status(missingLiveConfig.length ? 503 : 200).json({ ok: missingLiveConfig.length === 0, service: 'vedoy-connect-api', missingConfiguration: missingLiveConfig }));
+app.get('/health', (_req, res) => res.status(missingLiveConfig.length ? 503 : 200).json({ ok: missingLiveConfig.length === 0, service: 'vedoy-phone-api', missingConfiguration: missingLiveConfig }));
 app.use((req, res, next) => {
   if (!missingLiveConfig.length) return next();
   res.status(503).json({ message: 'Telefonitjenesten er ikke konfigurert ennå.', missingConfiguration: missingLiveConfig });

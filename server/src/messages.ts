@@ -1,6 +1,7 @@
 import {Router} from 'express';
 import {z} from 'zod';
-import {db,twilioClient} from './clients.js';
+import {phoneDb as db} from './database.js';
+import {twilioClient} from './clients.js';
 import {env} from './config.js';
 import {asyncRoute,destinationAllowed,e164,validateTwilio} from './http.js';
 export const messages=Router();
