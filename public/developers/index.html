@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vedoy Developer Portal</title>
-  <meta name="description" content="Vedoy Developer Portal for Voice, SMS, Numbers, KYC, Supabase and deployment APIs.">
+  <meta name="description" content="Vedoy Developer Portal for Voice, SMS, Numbers, KYC, Neon and deployment APIs.">
   <style>
     :root {
       color-scheme: dark;
@@ -480,7 +480,7 @@
         <div>
           <p class="eyebrow">Vedoy Connect API</p>
           <h1>Build with signal.</h1>
-          <p class="lead">Et developer portal-lag for Vedoy sine mobil- og kommunikasjons-API-er: Voice, SMS, nummerbutikk, KYC, webhooks, Supabase-data og produksjonsdeploy.</p>
+          <p class="lead">Et developer portal-lag for Vedoy sine mobil- og kommunikasjons-API-er: Voice, SMS, nummerbutikk, KYC, webhooks, Neon-data og produksjonsdeploy.</p>
           <div class="actions">
             <a class="cta" href="#apis">Utforsk blokker</a>
             <a class="cta ghost" href="https://github.com/leandervedoy/vedoy-phone#readme">Les README</a>
@@ -522,14 +522,14 @@
         <span class="pill">Number search</span>
         <span class="pill">KYC workflow</span>
         <span class="pill">Twilio webhooks</span>
-        <span class="pill">Supabase Auth</span>
+        <span class="pill">Neon Auth</span>
         <span class="pill">Vercel deploy</span>
         <span class="pill">Voice SDK tokens</span>
         <span class="pill">Global SMS threads</span>
         <span class="pill">Number search</span>
         <span class="pill">KYC workflow</span>
         <span class="pill">Twilio webhooks</span>
-        <span class="pill">Supabase Auth</span>
+        <span class="pill">Neon Auth</span>
         <span class="pill">Vercel deploy</span>
       </div>
     </div>
@@ -537,7 +537,7 @@
     <section id="apis">
       <div class="section-head">
         <h2>API blocks for the whole call stack.</h2>
-        <p>Dette er hentet fra Vedoy Connect-serveren i prosjektet. Alle `/v1`-ruter krever Supabase JWT. Twilio-webhooks valideres med signatur og bruker serverens offentlige base-URL.</p>
+        <p>Dette er hentet fra Vedoy Connect-serveren i prosjektet. Alle `/v1`-ruter krever Neon Managed Better Auth JWT. Twilio-webhooks valideres med signatur og bruker serverens offentlige base-URL.</p>
       </div>
 
       <div class="filters" role="toolbar" aria-label="Filtrer API-er">
@@ -551,7 +551,7 @@
 
       <div class="api-grid" id="apiGrid">
         <article class="api-card" data-kind="system"><span class="method">GET</span><strong class="route">/health</strong><p>Readiness endpoint for the Node API. Returns service name and `ok: true`.</p><div class="tag-row"><span class="tag">public</span><span class="tag">monitoring</span></div></article>
-        <article class="api-card" data-kind="voice"><span class="method post">POST</span><strong class="route">/v1/voice/token</strong><p>Vends short-lived Twilio Voice access tokens for iOS or Android development builds.</p><div class="tag-row"><span class="tag">Supabase JWT</span><span class="tag">Twilio server secret</span></div></article>
+        <article class="api-card" data-kind="voice"><span class="method post">POST</span><strong class="route">/v1/voice/token</strong><p>Vends short-lived Twilio Voice access tokens for iOS or Android development builds.</p><div class="tag-row"><span class="tag">Neon Auth JWT</span><span class="tag">Twilio server secret</span></div></article>
         <article class="api-card" data-kind="voice"><span class="method">GET</span><strong class="route">/v1/voice/history</strong><p>Lists call events stored from Twilio status callbacks for the signed-in user.</p><div class="tag-row"><span class="tag">calls</span><span class="tag">RLS-backed</span></div></article>
         <article class="api-card" data-kind="sms"><span class="method">GET</span><strong class="route">/v1/messages/threads</strong><p>Builds the SMS inbox thread list from inbound and outbound message rows.</p><div class="tag-row"><span class="tag">threads</span><span class="tag">two-way SMS</span></div></article>
         <article class="api-card" data-kind="sms"><span class="method">GET</span><strong class="route">/v1/messages/threads/:phone</strong><p>Returns up to 200 messages with one recipient or sender in chronological order.</p><div class="tag-row"><span class="tag">E.164</span><span class="tag">conversation</span></div></article>
@@ -561,10 +561,12 @@
         <article class="api-card" data-kind="numbers"><span class="method">GET</span><strong class="route">/v1/numbers/countries/:code/pricing</strong><p>Fetches monthly Twilio number pricing via server-side Pricing API credentials.</p><div class="tag-row"><span class="tag">price check</span><span class="tag">currency</span></div></article>
         <article class="api-card" data-kind="numbers"><span class="method">GET</span><strong class="route">/v1/numbers/available</strong><p>Searches live Twilio inventory for local, mobile or toll-free numbers, optionally with a pattern.</p><div class="tag-row"><span class="tag">number shop</span><span class="tag">Twilio</span></div></article>
         <article class="api-card" data-kind="numbers"><span class="method post">POST</span><strong class="route">/v1/numbers/purchase</strong><p>Purchases a confirmed available number after price re-check, quota lock and KYC requirement validation.</p><div class="tag-row"><span class="tag">atomic reserve</span><span class="tag">compliance gate</span></div></article>
-        <article class="api-card" data-kind="numbers"><span class="method delete">DELETE</span><strong class="route">/v1/numbers/mine/:id</strong><p>Releases an active Twilio number owned by the user and marks it released in Supabase.</p><div class="tag-row"><span class="tag">account</span><span class="tag">billing stop</span></div></article>
-        <article class="api-card" data-kind="kyc"><span class="method post">POST</span><strong class="route">/v1/kyc/submissions</strong><p>Registers identity, address proof or business registration files already uploaded to the private KYC bucket.</p><div class="tag-row"><span class="tag">private storage</span><span class="tag">pending review</span></div></article>
-        <article class="api-card" data-kind="kyc"><span class="method">GET</span><strong class="route">/v1/kyc/status</strong><p>Shows the signed-in user's recent KYC submissions and review status.</p><div class="tag-row"><span class="tag">user status</span><span class="tag">RLS</span></div></article>
-        <article class="api-card" data-kind="kyc"><span class="method patch">PATCH</span><strong class="route">/v1/kyc/submissions/:id/review</strong><p>Admin-only review route that requires Twilio address SID and completed compliance mapping before approval.</p><div class="tag-row"><span class="tag">admin</span><span class="tag">regulatory</span></div></article>
+        <article class="api-card" data-kind="numbers"><span class="method delete">DELETE</span><strong class="route">/v1/numbers/mine/:id</strong><p>Releases an active Twilio number owned by the user and marks it released in Neon Postgres.</p><div class="tag-row"><span class="tag">account</span><span class="tag">billing stop</span></div></article>
+        <article class="api-card" data-kind="kyc"><span class="method post">POST</span><strong class="route">/v1/kyc/documents</strong><p>Uploads a JPEG, PNG, WebP or PDF of up to 10 MB to private Neon Object Storage.</p><div class="tag-row"><span class="tag">private storage</span><span class="tag">user-scoped</span></div></article>
+        <article class="api-card" data-kind="kyc"><span class="method post">POST</span><strong class="route">/v1/kyc/submissions</strong><p>Registers identity, address proof or business registration files already uploaded through the API.</p><div class="tag-row"><span class="tag">private storage</span><span class="tag">pending review</span></div></article>
+        <article class="api-card" data-kind="kyc"><span class="method">GET</span><strong class="route">/v1/kyc/status</strong><p>Shows the signed-in user's recent KYC submissions and review status.</p><div class="tag-row"><span class="tag">user status</span><span class="tag">account-scoped</span></div></article>
+        <article class="api-card" data-kind="kyc"><span class="method">GET</span><strong class="route">/v1/kyc/admin/submissions</strong><p>Lists pending identity reviews for administrators.</p><div class="tag-row"><span class="tag">admin</span><span class="tag">review queue</span></div></article>
+        <article class="api-card" data-kind="kyc"><span class="method patch">PATCH</span><strong class="route">/v1/kyc/admin/submissions/:id</strong><p>Admin-only route to approve or reject a pending submission.</p><div class="tag-row"><span class="tag">admin</span><span class="tag">review decision</span></div></article>
         <article class="api-card" data-kind="webhook"><span class="method webhook">POST</span><strong class="route">/webhooks/twilio/voice</strong><p>Validated Twilio Voice webhook for outbound client dialing and inbound calls to the user's Voice identity.</p><div class="tag-row"><span class="tag">TwiML</span><span class="tag">signature</span></div></article>
         <article class="api-card" data-kind="webhook"><span class="method webhook">POST</span><strong class="route">/webhooks/twilio/voice/status</strong><p>Stores call status, direction, participants and duration as call events.</p><div class="tag-row"><span class="tag">call events</span><span class="tag">upsert</span></div></article>
         <article class="api-card" data-kind="webhook"><span class="method webhook">POST</span><strong class="route">/webhooks/twilio/sms/inbound</strong><p>Stores inbound SMS and records STOP-style opt-outs for future sends.</p><div class="tag-row"><span class="tag">inbound SMS</span><span class="tag">STOP</span></div></article>
@@ -580,7 +582,7 @@
       <div class="stack">
         <article class="stack-card"><strong>Expo mobile</strong><p>Development build, Voice SDK support, dark industrial Vedoy UI and mobile app shortcuts.</p></article>
         <article class="stack-card"><strong>Node API</strong><p>Express, TypeScript, helmet, CORS, rate limits and webhook validation.</p></article>
-        <article class="stack-card"><strong>Supabase</strong><p>Auth JWTs, RLS-backed tables, private KYC storage and server-side service role only.</p></article>
+        <article class="stack-card"><strong>Neon</strong><p>Managed Better Auth JWTs, Neon Postgres and private Object Storage accessed by server-side credentials.</p></article>
         <article class="stack-card"><strong>Vercel ready</strong><p>Static portal and API docs can be published as a preview or production deployment when project binding exists.</p></article>
       </div>
     </section>
@@ -593,10 +595,10 @@
       <div class="status">
         <article class="status-card">
           <strong>Local source</strong>
-          <p>API-listen kommer fra `outputs/server/src` og Supabase-migrasjonen i dette prosjektet.</p>
+          <p>API-listen kommer fra `server/src` og Neon-migrasjonen i dette prosjektet.</p>
           <div class="status-line"><span>Backend</span><span>Implementert, ikke bekreftet deployet fra denne mappen.</span></div>
-          <div class="status-line"><span>Database</span><span>Schema finnes lokalt. Live Supabase project id trengs for å hente faktisk tabellstatus.</span></div>
-          <div class="status-line"><span>Secrets</span><span>Twilio og Supabase service role skal fortsatt ligge server-side.</span></div>
+          <div class="status-line"><span>Database</span><span>Neon Postgres-schema finnes; produksjonsmigrasjonen er ikke brukt fra denne arbeidskopien.</span></div>
+          <div class="status-line"><span>Secrets</span><span>Twilio- og Neon Object Storage-legitimasjon skal ligge server-side.</span></div>
         </article>
         <article class="status-card">
           <strong>Production gates</strong>
