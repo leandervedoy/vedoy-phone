@@ -1,50 +1,50 @@
 # Vedoy Phone
 
-Vedoy Phone is an Expo development-build app and Node/TypeScript communications API for Twilio Programmable Voice, two-way SMS, phone-number purchasing, and regulatory onboarding. The public product and developer website lives in `public/` and is deployed separately from the communications API.
+Vedoy Phone is an Expo development-build app and Node/TypeScript communications service for Twilio Voice, two-way SMS, number purchasing, and regulatory onboarding.
 
 ## Project structure
 
-- `mobile/` Expo + React Native + TypeScript application
-- `server/` Express API, Twilio webhooks, Neon Postgres, and private Neon Object Storage
-- `public/` Vedoy Phone product site and developer portal for Vercel
-- `neon/migrations/` schema changes for the existing Neon `phone` schema
-- `docs/neon-integration.md` Neon Auth, database, and storage configuration
+- `mobile/` Expo + React Native + TypeScript app
+- `server/` Express service, Vercel API route wrappers, Twilio webhooks, Neon Postgres, Neon Auth validation, and private KYC uploads
+- `server/migrations/` fresh-install phone schema bootstrap
+- `neon/migrations/` additive updates for the existing Neon phone schema
+- `public/` product website and developer portal
 - `docs/country-capabilities.md` how to interpret the live country catalog
-- `docs/open-source-review.md` comparison with the official Twilio Voice React Native reference architecture
+- `docs/provider-configuration.md` Neon, Twilio, and Telnyx server configuration
+- `docs/open-source-review.md` comparison with Twilio's Voice React Native reference architecture
 
-The mobile `Apper` tab includes shortcuts to Autocalls AI, Wix, OpenAI Developers, ChatGPT, Neon, Vercel, and Twilio Console. The Computer feature is clearly marked desktop-only.
+The phone service uses a separate `phone` schema and a `kyc/` object prefix inside the existing Neon project. Developer tables and objects are left intact. The production branch already has Neon Auth and a private `uploads` bucket. KYC files are sent through the authenticated Node service and stored in that bucket; provider credentials stay on the server.
 
-The Vercel deployment serves the static website only. It does not run `server/`, vend Voice tokens, handle Twilio webhooks, or make number purchasing live. Deploy the API to a persistent Node service with a public HTTPS origin, configure its secrets there, and point the mobile build at that API.
+The product website is static and contains no provider credentials. The communications API is the Express app in `server/`, runnable locally or through the Vercel route wrappers and configuration there. The mobile **Apps** tab provides external service shortcuts; those links do not connect accounts or share credentials.
 
-## Start locally
+## Local setup
 
-1. Install Node.js 20 LTS. Copy `server/.env.example` to `server/.env` and `mobile/.env.example` to the Expo environment.
-2. Set `DATABASE_URL`, `NEON_AUTH_BASE_URL`, and the server-only Neon Object Storage credentials from the selected Neon project. Configure the Twilio API credentials and Voice Application SID on the server only.
-3. Review `neon/migrations/202610030001_phone_api_support.sql` and apply it to a temporary Neon branch first. Do not apply it to the protected production branch without explicit approval.
+1. Use Node.js 20 LTS. Copy `server/.env.example` to `server/.env` and `mobile/.env.example` to `mobile/.env`.
+2. In `server/.env`, set the Neon pooled `DATABASE_URL`, Neon Auth base URL, Neon Storage S3 credentials, and Twilio credentials.
+3. For a fresh database, apply `server/migrations/001_phone_schema.sql`, then `neon/migrations/202610030001_phone_api_support.sql`. For the existing phone schema, review and apply only the additive Neon migration after testing it on a temporary branch. Do not apply migrations to production without explicit approval.
 4. In `server/`, run `npm install` and `npm run dev`.
-5. In `mobile/`, set `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_NEON_AUTH_URL`, run `npm install`, then `npx expo prebuild` and `npx expo run:ios` or `npx expo run:android`.
+5. In `mobile/.env`, set `EXPO_PUBLIC_API_URL` to the HTTPS API origin and `EXPO_PUBLIC_NEON_AUTH_BASE_URL` to the Neon Managed Better Auth base URL. Then run `npm install`, `npx expo prebuild`, and `npx expo run:ios` or `npx expo run:android`.
 
-Expo Go is unsupported for Twilio Voice. Use an Expo development build. For inbound calls, configure an APNs VoIP push credential and Firebase credentials with Twilio and EAS; the simulator cannot validate incoming iOS calls.
+Expo Go is unsupported for Twilio Voice. Use an Expo development build. Incoming calls also require APNs VoIP and Firebase credentials configured with Twilio and EAS; test on physical devices.
 
-The app uses Expo SDK 57, supported by the Twilio Voice React Native SDK 1.8+ Expo plugin. Native minimums are iOS 16.4 and Android API 24. External app shortcuts do not link accounts or share credentials.
+## Authentication and documents
 
-## Account and live-service setup
+The app signs in through Neon Auth using Better Auth's Expo integration and secure device storage. The native app scheme is `vedoyphone://`; Neon Auth requests use the product website origin. The server validates each session against the Neon Auth endpoint before accepting account requests. User data is stored in Neon Postgres; private ID and address files are uploaded by the server to the Neon `uploads` bucket under `kyc/{userId}/`.
 
-Enable email/password and email verification by code in Neon Managed Better Auth. Add the app scheme `vedoyconnect://` to Neon Auth's trusted origins, and configure production email delivery. The app stores its Better Auth session in Expo SecureStore and obtains short-lived Neon JWTs for API requests. The API validates JWT signatures through Neon Auth JWKS and looks up the user in `neon_auth`.
+The first-party database migration creates tables only inside the `phone` schema. No Supabase service, SDK, storage bucket, or credentials are used by the phone app or service. Existing Supabase records are not copied automatically; export and reconcile them separately before removing any old account or data.
 
-The server connects directly to Neon Postgres through `DATABASE_URL`. KYC documents are sent through the authenticated API to the private Neon Object Storage bucket; storage credentials never belong in the mobile app. Uploads are limited to 10 MB and JPEG, PNG, WebP, or PDF.
+## Telephony setup
 
-Set a public HTTPS `PUBLIC_BASE_URL`, register `/webhooks/twilio/voice`, `/webhooks/twilio/voice/status`, and `/webhooks/twilio/sms/inbound` in Twilio, and ensure the exact externally visible URL is used for signature validation. Set the outbound messaging status callback to `/webhooks/twilio/sms/status`.
+Set a public HTTPS `PUBLIC_BASE_URL`, register `/webhooks/twilio/voice`, `/webhooks/twilio/voice/status`, and `/webhooks/twilio/sms/inbound` in Twilio, and configure the SMS status callback at `/webhooks/twilio/sms/status`. Preserve the externally visible request URL for Twilio signature validation.
 
-In this starter, KYC review status is administrator-controlled; the app does not claim automated Twilio Regulatory Bundle submission. Implement country-specific Twilio Regulatory Compliance APIs and an audited human approval queue before real production sales.
+Number search is scoped to the connected Twilio account. Customers can choose a country and number type, confirm a current monthly number price, and provision up to `MAX_NUMBERS_PER_USER` numbers. This charges the connected Twilio account. Customer checkout, subscriptions, and invoices are not implemented. Regulatory number types require administrator review and completed Twilio compliance mapping.
 
-## Production launch checklist
+## Production checklist
 
-- Configure Twilio push credentials and test calls on physical iOS and Android devices.
-- Restrict API CORS to approved origins; terminate TLS at the ingress and preserve the original host/protocol for webhook validation.
-- Set rate limits, abuse monitoring, verified caller destinations, spend alerts, backups, retention/deletion policies, and a support escalation path.
-- Complete Twilio regulatory bundles/number mapping and country legal review for every number type sold.
-- Keep Neon database and Object Storage credentials on the server; keep the KYC bucket private.
-- Validate webhook signatures using the externally visible URL and raw form fields; never disable validation in production.
+- Configure database, Neon Auth, Neon Storage, Twilio credentials, and push credentials in the Node service environment.
+- Restrict API origins, terminate TLS, preserve webhook request details, and keep all provider credentials server-side.
+- Set rate limits, abuse monitoring, verified destinations, spend alerts, retention/deletion policies, and a support path.
+- Complete Twilio regulatory bundles and country-by-country legal review before selling each number type.
+- Verify account access, document upload privacy, Twilio webhooks, and inbound/outbound calls on physical iOS and Android devices.
 
-Phone provisioning charges the connected Twilio account. The mobile flow shows the current monthly Twilio number price and confirms it before provisioning, but end-customer billing, subscriptions, and invoices are not implemented. Usage charges are separate. This source is a deployable foundation, not an assertion that external services, customer billing, legal review, or a production deployment have been configured.
+The source is a deployable foundation. It does not mean Twilio billing, customer checkout, regulatory approval, or the Node service has been configured or deployed.

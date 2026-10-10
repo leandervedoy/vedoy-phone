@@ -1,5 +1,5 @@
 {
-  "name": "vedoy-connect-mobile",
+  "name": "vedoy-phone-mobile",
   "version": "1.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -30,7 +30,6 @@
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
-    "react-native-url-polyfill": "^2.0.0",
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {

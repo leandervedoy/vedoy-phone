@@ -22,7 +22,7 @@ const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().default(8080),
   PUBLIC_BASE_URL: z.string().url().default('https://vedoy-phone-api.vercel.app'),
-  APP_ORIGINS: z.string().default('vedoyconnect://,https://vedoy-phone.vercel.app,https://vedoy-dev-portal.vercel.app'),
+  APP_ORIGINS: z.string().default('vedoyphone://,https://vedoy-phone.vercel.app,https://vedoy-dev-portal.vercel.app'),
   DATABASE_URL: z.string().min(1).default('postgresql://missing:missing@localhost:5432/missing?sslmode=require'),
   NEON_AUTH_BASE_URL: z.string().url().default('https://missing.neonauth.invalid/neondb/auth'),
   NEON_STORAGE_ENDPOINT: z.string().url().default('https://missing.storage.invalid'),

@@ -4,14 +4,14 @@ Vedoy Phone targets the existing Neon project **Vedoy Developer Hub**. The API u
 
 ## Authentication
 
-- Set `NEON_AUTH_BASE_URL` in the API environment and `EXPO_PUBLIC_NEON_AUTH_URL` in the Expo environment to the Managed Better Auth base URL.
+- Set `NEON_AUTH_BASE_URL` in the API environment and `EXPO_PUBLIC_NEON_AUTH_BASE_URL` in the Expo environment to the Managed Better Auth base URL.
 - Enable email/password sign-in and email verification by one-time code in the Neon Auth settings. The mobile app sends and verifies the email OTP before signing in.
-- Add `vedoyconnect://` to trusted origins for the native app. Configure a dedicated SMTP provider before production email verification.
+- The native app uses the `vedoyphone://` scheme. Keep the app's web origin trusted for its Better Auth requests, and configure a dedicated SMTP provider before production email verification.
 - The mobile client stores the Better Auth session in Expo SecureStore, requests short-lived JWTs, and sends them to the API as bearer tokens. The API verifies EdDSA signatures against `/.well-known/jwks.json` and checks the subject against `neon_auth."user"`.
 
 ## Database
 
-The selected database already contains the `phone` schema and its number, message, call-event, opt-out, and KYC tables. The checked-in migration `neon/migrations/202610030001_phone_api_support.sql` changes `phone.phone_numbers.country_code` to `varchar(2)` and adds the atomic per-user number reservation function expected by the API.
+The selected database already contains the `phone` schema and its number, message, call-event, opt-out, and KYC tables. For this existing schema, the additive migration `neon/migrations/202610030001_phone_api_support.sql` changes `phone.phone_numbers.country_code` to `varchar(2)` and adds the atomic per-user number reservation function expected by the API. A fresh database must first run the bootstrap schema in `server/migrations/001_phone_schema.sql`, then this additive migration.
 
 The migration has **not** been applied. Review it and test it on a temporary Neon branch before requesting approval to apply it to the protected production branch. The API expects KYC timestamps in the existing `created_at` and `updated_at` columns.
 

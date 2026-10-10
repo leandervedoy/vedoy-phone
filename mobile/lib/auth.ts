@@ -3,15 +3,16 @@ import { emailOTPClient, jwtClient } from 'better-auth/client/plugins';
 import { expoClient } from '@better-auth/expo/client';
 import * as SecureStore from 'expo-secure-store';
 
-const baseURL = process.env.EXPO_PUBLIC_NEON_AUTH_URL;
+const baseURL = process.env.EXPO_PUBLIC_NEON_AUTH_BASE_URL;
 export const authConfigured = !!baseURL;
 
 export const authClient = createAuthClient({
   baseURL: baseURL ?? 'https://missing.neonauth.invalid',
+  fetchOptions: { headers: { Origin: 'https://vedoy-phone.vercel.app' } },
   plugins: [
     expoClient({
-      scheme: 'vedoyconnect',
-      storagePrefix: 'vedoy-connect',
+      scheme: 'vedoyphone',
+      storagePrefix: 'vedoy-phone',
       storage: SecureStore,
     }),
     emailOTPClient(),
