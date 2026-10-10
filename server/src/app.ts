@@ -40,5 +40,13 @@ app.use('/webhooks/twilio/voice', twilioVoice);
 app.use('/webhooks/twilio/sms', twilioSms);
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('request_failed', err instanceof Error ? { name: err.name, message: env.NODE_ENV === 'production' ? 'redacted' : err.message } : err);
-  res.status(500).json({ message: 'Noe gikk galt. Prøv igjen eller kontakt støtte.' });
+  const status = typeof err === 'object' && err !== null && 'status' in err && typeof err.status === 'number'
+    ? err.status
+    : 500;
+  if (status === 413) return res.status(413).json({ message: 'Filen er større enn grensen på 10 MB.' });
+  res.status(status >= 400 && status < 600 ? status : 500).json({
+    message: status >= 400 && status < 500
+      ? 'Forespørselen kunne ikke behandles.'
+      : 'Noe gikk galt. Prøv igjen eller kontakt støtte.',
+  });
 });

@@ -6,9 +6,9 @@ The product website has no provider credentials. Configure the following values 
 
 - `DATABASE_URL`: pooled Postgres connection string for the existing Neon branch, with `sslmode=require`.
 - `NEON_AUTH_BASE_URL`: the Neon Auth base URL used by the mobile session validator.
-- `AWS_*`, `AWS_ENDPOINT_URL_S3`, and `KYC_BUCKET`: Neon Object Storage credentials and private KYC bucket details.
+- `NEON_STORAGE_ENDPOINT`, `NEON_STORAGE_REGION`, `NEON_STORAGE_BUCKET`, `NEON_STORAGE_ACCESS_KEY_ID`, and `NEON_STORAGE_SECRET_ACCESS_KEY`: Neon Object Storage connection details and server-only credentials for the private KYC bucket.
 
-Apply `server/migrations/001_phone_schema.sql` before starting the API. The phone app uses the dedicated `phone` schema, so it does not mix phone data with the developer portal tables.
+For a fresh database, apply `server/migrations/001_phone_schema.sql` and then `neon/migrations/202610030001_phone_api_support.sql`. The existing Neon phone schema needs only the additive migration after review and testing on a temporary branch. Do not apply it to production without explicit approval. The phone app uses the dedicated `phone` schema, so it does not mix phone data with the developer portal tables.
 
 ## Twilio
 

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS phone.phone_numbers (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id text NOT NULL,
   phone_number text NOT NULL,
-  country_code char(2) NOT NULL,
+  country_code varchar(2) NOT NULL,
   number_type text NOT NULL CHECK (number_type IN ('local','mobile','tollFree')),
   capabilities jsonb NOT NULL DEFAULT '{}'::jsonb,
   status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','active','released','failed')),

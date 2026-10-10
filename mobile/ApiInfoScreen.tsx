@@ -1,0 +1,6 @@
+import React from 'react';
+import { ScrollView, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Card, Label, PageTitle } from './components/ui';
+import { theme as t } from './theme';
+export default function ApiInfoScreen(){return <SafeAreaView style={{flex:1,backgroundColor:t.color.bg}}><ScrollView contentContainerStyle={{padding:22,gap:14}}><PageTitle eyebrow="SYSTEMSTATUS" title="Tilkoblinger" sub="Status for Vedoy Communications API og konto."/><Card><Label>API</Label><Text style={{color:t.color.text,fontSize:17,fontWeight:'700',marginTop:8}}>{process.env.EXPO_PUBLIC_API_URL||'Ikke konfigurert'}</Text><Text style={{color:t.color.muted,marginTop:8}}>Twilio-legitimasjon oppbevares på API-serveren.</Text></Card><Card><Label>SESSJON</Label><Text style={{color:t.color.text,marginTop:8}}>Neon Managed Better Auth beskytter appkallet. Voice-tokens utstedes med kort levetid når en gyldig økt er tilgjengelig.</Text></Card><Card><Label>INNKOMMENDE SAMTALER</Label><Text style={{color:t.color.muted,marginTop:8,lineHeight:21}}>Krever APNs VoIP-sertifikat, FCM push-credential og registrert enhet. Bruk en fysisk enhet for reell validering.</Text></Card></ScrollView></SafeAreaView>}
