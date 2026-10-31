@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08120e">
+<meta name="description" content="Bygg samtaleregler med dra-og-slipp og din egen innspilte stemme i Vedoy Phone.">
+<title>Svarbygger · Vedoy Phone</title>
+<link rel="stylesheet" href="/assets/phone.css">
+<link rel="stylesheet" href="/svarbygger/builder.css">
+<script defer src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script defer src="/svarbygger/builder.js"></script>
+</head>
+<body>
+<div class="motion-bg" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+<header class="shell header">
+  <a class="identity" href="/"><span class="logo-icon"><i data-lucide="phone-call"></i></span><span><strong>vedoy<span>phone</span></strong><small>VOICE STUDIO</small></span></a>
+  <nav class="topnav"><a href="/admin/">Admin</a><a href="/bedrift/">Sentralbord</a><a href="/priser/">Priser</a></nav>
+  <span class="demo-chip"><i data-lucide="circle-dot"></i> LOKAL DEMO</span>
+</header>
+<main class="shell">
+ <section class="hero-intro">
+   <div>
+    <span class="kicker"><span class="glow-dot"></span> Svarbygger / ingen programmering nødvendig</span>
+    <h1>Bygg samtaler<br><em>som LEGO.</em></h1>
+    <p class="lead">Ta opp din egen stemme. Dra inn et svar, velg hva kunden skal si, og prøv samtalen før du kobler til en ekte telefonlinje.</p>
+    <div class="hero-actions"><a class="hero-btn" href="#builder"><i data-lucide="blocks"></i> Åpne bygger</a><a class="hero-btn ghost" href="#test-lab"><i data-lucide="headphones"></i> Prøv en samtale</a></div>
+   </div>
+   <div class="phone-showcase" aria-hidden="true">
+     <div class="orbit orbit-a"></div><div class="orbit orbit-b"></div>
+     <div class="mock-phone" id="mock-phone"><div class="mock-screen"><div class="mock-island"></div><div class="phone-top">9:41 <span>◖◖◖</span></div><div class="phone-logo">vedoy<span>phone</span></div><div class="wave-lines"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><small>INNKOMMENDE DEMOSAMTALE</small><strong>Hei, velkommen!</strong><div class="caller-lines"><span>👤 Kunde</span><span class="connecting">Automatisk svar</span></div><div class="phone-bottom"><i data-lucide="mic"></i><span><i data-lucide="phone"></i></span><i data-lucide="grid-3x3"></i></div></div></div>
+   </div>
+ </section>
+ <section class="safety-banner"><i data-lucide="shield-alert"></i><div><strong>Demoversjon – ingen ekte telefonsamtaler besvares.</strong><p>Regler og lydopptak lagres bare i denne nettleseren. Telnyx, sentralbordet og felles bedriftslagring kobles på i en senere produksjonsfase. Spill bare inn stemmer du har lov til å bruke.</p></div></section>
+ <section id="builder" class="builder-section">
+   <div class="section-head"><div><span class="kicker">01 / REGELBYGGER</span><h2>Visuell samtaleflyt</h2><p>Dra en blokk til arbeidsflaten – eller trykk «Legg til» på mobil. Flytt regler i prioritert rekkefølge.</p></div><div class="status-pill" id="saved-status" aria-live="polite"><i data-lucide="cloud-off"></i> Lokal lagring</div></div>
+   <div class="builder-grid">
+     <aside class="palette panel">
+       <h3><i data-lucide="puzzle"></i> LEGO-klosser</h3><p class="small-muted">Velg en situasjon</p>
+       <div class="block-source trigger-source" draggable="true" data-template="greeting" tabindex="0" role="button"><span><i data-lucide="message-circle"></i> Hilsen</span><small>«Hei assistent»</small><button type="button" data-add="greeting">Legg til <i data-lucide="plus"></i></button></div>
+       <div class="block-source trigger-source" draggable="true" data-template="weather" tabindex="0" role="button"><span><i data-lucide="sun"></i> Småprat</span><small>«Fint vær i dag»</small><button type="button" data-add="weather">Legg til <i data-lucide="plus"></i></button></div>
+       <div class="block-source trigger-source" draggable="true" data-template="hours" tabindex="0" role="button"><span><i data-lucide="clock-4"></i> Åpningstider</span><small>«Når har dere åpent?»</small><button type="button" data-add="hours">Legg til <i data-lucide="plus"></i></button></div>
+       <div class="block-source trigger-source" draggable="true" data-template="custom" tabindex="0" role="button"><span><i data-lucide="plus-circle"></i> Egendefinert</span><small>Bestem dine egne ord</small><button type="button" data-add="custom">Legg til <i data-lucide="plus"></i></button></div>
+       <div class="palette-help"><i data-lucide="lightbulb"></i><span>Den øverste regelen som matcher, svarer først. Bruk ulike uttrykk for å unngå feil svar.</span></div>
+     </aside>
+     <div class="canvas-panel panel">
+       <div class="canvas-heading"><div><h3><i data-lucide="git-branch"></i> Samtaleflyt</h3><span id="rule-count">0 regler</span></div><button class="text-button" id="reset-rules" type="button"><i data-lucide="rotate-ccw"></i> Eksempelregler</button></div>
+       <div id="drop-zone" class="drop-zone"><div class="drop-guide" id="drop-guide"><i data-lucide="mouse-pointer-click"></i><p>Slipp en blokk her, eller velg en kloss til venstre.</p></div><div id="flow-rules" class="flow-rules" aria-label="Prioriterte svarregler"></div></div>
+       <div class="fallback"><span class="fallback-icon"><i data-lucide="help-circle"></i></span><div><strong>Hvis ingen regel passer …</strong><p id="fallback-preview">«Beklager, kan du si det på en annen måte?»</p></div></div>
+       <div class="canvas-footer"><button class="solid-btn" type="button" id="new-rule"><i data-lucide="plus"></i> Ny regel</button><button class="outline-btn" type="button" id="export-rules"><i data-lucide="download"></i> Eksporter JSON</button><button class="outline-btn" type="button" id="import-trigger"><i data-lucide="upload"></i> Importer</button><input id="import-file" type="file" accept="application/json,.json" hidden></div>
+     </div>
+     <aside class="inspector panel">
+       <h3><i data-lucide="sliders-horizontal"></i> Rediger kloss</h3>
+       <p class="small-muted" id="editor-desc">Velg en regel for å redigere den.</p>
+       <form id="rule-editor" class="editor-form">
+         <label for="rule-title">Navn på regel</label><input id="rule-title" required maxlength="70">
+         <label for="rule-trigger">Når kunden sier …</label><textarea id="rule-trigger" rows="2" maxlength="170" placeholder="Hei assistent" required></textarea>
+         <p class="field-hint">Flere uttrykk: skill dem med <strong>;</strong> (semikolon).</p>
+         <label for="rule-reply">Svar med …</label><textarea id="rule-reply" rows="4" maxlength="650" required></textarea>
+         <label for="rule-audio">Valgfritt stemmeopptak</label><select id="rule-audio"><option value="">Bruk opplest tekst</option></select>
+         <label class="checkbox-label"><input id="rule-active" type="checkbox" checked> Regel er aktiv</label>
+         <button type="submit" class="solid-btn"><i data-lucide="save"></i> Lagre kloss</button>
+         <button type="button" class="danger-btn" id="delete-rule"><i data-lucide="trash-2"></i> Fjern regel</button>
+       </form>
+       <div id="edit-feedback" class="feedback" aria-live="polite"></div>
+     </aside>
+   </div>
+ </section>
+ <section id="test-lab" class="lab-grid">
+  <div class="panel record-panel">
+    <span class="kicker">02 / STEMMEBIBLIOTEK</span><h2>Bruk din egen stemme</h2><p class="small-muted">Spill inn en kort svarmelding. Den lagres privat i nettleseren din med IndexedDB. Den sendes ikke til Vedoy.</p>
+    <label for="clip-name">Navn på lydklipp</label><input id="clip-name" maxlength="70" placeholder="God dag du">
+    <div class="record-buttons"><button type="button" id="record-start" class="solid-btn"><i data-lucide="mic"></i> Ta opp</button><button type="button" id="record-stop" class="outline-btn" disabled><i data-lucide="square"></i> Stopp opptak</button></div>
+    <p id="record-status" class="feedback" aria-live="polite">Tillat mikrofon når du starter opptak. Maks 30 sekunder per klipp.</p>
+    <div id="audio-library" class="audio-library"></div>
+  </div>
+  <div class="panel test-panel">
+    <span class="kicker">03 / SAMTALETEST</span><h2>Hva vil telefonen svare?</h2><p class="small-muted">Test med tekst eller tale fra mikrofonen. Talegjenkjenning er nettleseravhengig og kan benytte en ekstern gjenkjenningstjeneste.</p>
+    <label for="test-phrase">Kunden sier</label><textarea id="test-phrase" rows="3" placeholder="Fint vær i dag"></textarea>
+    <div class="record-buttons"><button id="run-test" class="solid-btn" type="button"><i data-lucide="play"></i> Test svar</button><button id="recognize-speech" class="outline-btn" type="button"><i data-lucide="mic-2"></i> Snakk</button><button id="stop-speech" class="outline-btn" type="button"><i data-lucide="volume-x"></i> Stopp lyd</button></div>
+    <div class="answer-preview" role="status" aria-live="polite"><span>VEDOY SVARER</span><strong id="test-answer">«God dag du!»</strong><small id="test-match">Velg en regel og prøv en setning.</small></div>
+    <p class="feedback" id="test-status" aria-live="polite"></p>
+    <label for="fallback-reply">Svar hvis ingen regler passer</label><textarea id="fallback-reply" rows="2" maxlength="350"></textarea><button class="outline-btn" id="save-fallback" type="button"><i data-lucide="save"></i> Lagre standardsvar</button>
+  </div>
+ </section>
+ <section class="bottom-note"><i data-lucide="info"></i><p><strong>Produksjonsplan:</strong> Telnyx må sende en sikker samtalehendelse til Vedoys server, som tolker tale til tekst, matcher regler og spiller av en godkjent lydfil eller syntetisert svar. Denne demonstrasjonen bruker ikke telefonnumre, sanntidsanrop eller skylagring. <a href="/regler/">Les om regelverk.</a></p></section>
+</main>
+<footer class="shell footer"><span>Vedoy Phone · Voice Studio · Klientbasert demonstrasjon</span><a href="/admin/">Til Admin Studio</a></footer>
+</body>
+</html>
