@@ -8,6 +8,8 @@ import { numbers } from './numbers.js';
 import { messages, twilioSms } from './messages.js';
 import { voice, twilioVoice } from './voice.js';
 import { kyc } from './kyc.js';
+import { contacts } from './contacts.js';
+import { switchboard } from './switchboard.js';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -36,6 +38,8 @@ app.use('/v1/numbers', numbers);
 app.use('/v1/messages', messages);
 app.use('/v1/voice', voice);
 app.use('/v1/kyc', kyc);
+app.use('/v1/contacts', contacts);
+app.use('/v1/switchboard', switchboard);
 app.use('/webhooks/twilio/voice', twilioVoice);
 app.use('/webhooks/twilio/sms', twilioSms);
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {

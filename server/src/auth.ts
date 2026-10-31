@@ -1,6 +1,6 @@
 import type {Request,Response,NextFunction} from 'express';
 import { env } from './config.js';
-declare global {namespace Express {interface Request {userId?:string;authToken?:string;isAdmin?:boolean}}}
+declare global {namespace Express {interface Request {userId?:string;authToken?:string;isAdmin?:boolean;userEmail?:string}}}
 export async function requireAuth(req:Request,res:Response,next:NextFunction){
   try {
     const authorization=req.header('authorization');
@@ -12,6 +12,7 @@ export async function requireAuth(req:Request,res:Response,next:NextFunction){
     const user=payload.user;
     if(!user?.id)return res.status(401).json({message:'Økten er utløpt.'});
     req.userId=user.id;
+    req.userEmail=user.email;
     req.isAdmin=!!user.email&&env.ADMIN_EMAILS.split(',').map(x=>x.trim().toLowerCase()).filter(Boolean).includes(user.email.toLowerCase());
     req.authToken=cookie;
     next();
