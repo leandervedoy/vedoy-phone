@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="no">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07110e"><meta name="description" content="Vedoy Phone Admin – sentralbord, bedriftsinnstillinger, driftsstatus og endringslogg. Demonstrasjon.">
+<title>Vedoy Phone — Admin Studio</title>
+<link rel="stylesheet" href="/admin/admin.css">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+<script src="/admin/admin.js" defer></script>
+</head>
+<body>
+<svg class="wave-field" viewBox="0 0 1440 960" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+  <defs><linearGradient id="wave-grad" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#a9ff7a" stop-opacity=".25"/><stop offset="1" stop-color="#2be1a6" stop-opacity=".02"/></linearGradient></defs>
+  <g class="wave-layer"><path d="M-80 390 C210 210 410 530 690 360 S1170 180 1540 360"/><path d="M-80 450 C200 270 420 590 690 420 S1180 240 1540 420"/><path d="M-80 510 C205 330 420 650 690 480 S1180 300 1540 480"/><path d="M-80 570 C200 390 425 710 690 540 S1175 360 1540 540"/></g>
+</svg>
+<header class="header">
+  <a class="brand" href="/"><span class="brand-mark"><i data-lucide="radio-tower"></i></span><span>vedoy<span class="lime">phone</span><small>ADMIN STUDIO</small></span></a>
+  <nav class="nav" aria-label="Hovedmeny"><a href="/bedrift/">Bedrift</a><a href="/priser/">Priser</a><a href="/regler/">Regler</a><a href="/sim/">SIM/eSIM</a></nav>
+  <span class="preview-pill"><i data-lucide="shield-alert"></i> TESTMILJØ</span>
+</header>
+<main>
+<section id="gate" class="gate-panel" aria-labelledby="gate-title">
+ <div class="gate-icon"><i data-lucide="shield-check"></i></div>
+ <p class="eyebrow">VEDOY PHONE / KONTROLLSENTER</p>
+ <h1 id="gate-title">Kraftig kontroll.<br><em>Enkel oversikt.</em></h1>
+ <p class="lede">Utforsk kontrollpanelet for bedriftstelefoni, samarbeid, kostnadskontroll og endringslogg. Dette er en demonstrasjon – ingen reelle kundedata vises.</p>
+ <form id="gate-form" class="gate-form"><label for="demo-password">Demopassord</label><div class="password-row"><input id="demo-password" type="password" required autocomplete="off" placeholder="Skriv demopassord" aria-describedby="gate-note"><button type="submit"><i data-lucide="arrow-right"></i><span>Åpne demo</span></button></div><p id="gate-error" role="alert" aria-live="polite"></p></form>
+ <p id="gate-note" class="fine"><i data-lucide="lock-keyhole"></i> Demokoden låser bare opp en lokal forhåndsvisning. For produksjon kreves ekte pålogging, serverstyrte roller og en sterkere sikkerhetsløsning.</p>
+</section>
+<section id="workspace" class="workspace" hidden aria-label="Vedoy Phone administrasjon">
+ <div class="workspace-top">
+   <div><p class="eyebrow">DASHBOARD / VEDOY PHONE</p><h1>Sentralbord.<br><em>Uten friksjon.</em></h1><p class="lede">Kontrollpanelet for arbeidshverdagen. Administrer demoen, prøv ringeflyten og se hva som må til for å starte.</p></div>
+   <div class="workspace-actions"><span class="status-chip"><span class="dot amber"></span> DEMO · IKKE LIVE</span><button type="button" id="lock-btn" class="outline-button"><i data-lucide="lock"></i> Lås</button></div>
+ </div>
+ <div class="overview">
+   <div class="overview-card"><span><i data-lucide="building-2"></i> Organisasjoner</span><strong id="org-count">1</strong><small>Demomiljø</small></div>
+   <div class="overview-card"><span><i data-lucide="phone-call"></i> Aktive samtaler</span><strong>0</strong><small>Ingen leverandør tilkoblet</small></div>
+   <div class="overview-card"><span><i data-lucide="shield-check"></i> Sikkerhet</span><strong>Demo</strong><small>Ingen persondata hentes</small></div>
+   <div class="overview-card"><span><i data-lucide="history"></i> Endringer i demo</span><strong id="event-count">0</strong><small>Lokal endringslogg</small></div>
+ </div>
+ <div class="dashboard-grid">
+ <div class="main-column">
+  <section class="panel" aria-labelledby="config-title">
+   <div class="section-heading"><div><p class="eyebrow">01 / KONTROLL</p><h2 id="config-title">Sentralbordinnstillinger</h2></div><span class="pill">Kan prøves nå</span></div>
+   <p class="hint">Endringer lagres lokalt på denne enheten i demonstrasjonen. Ekte sentralbordruting aktiveres ikke.</p>
+   <form id="settings-form" class="form-grid">
+    <div class="full"><label for="company-name">Bedriftsnavn</label><input id="company-name" required maxlength="80" placeholder="Min bedrift AS"></div>
+    <div><label for="org-type">Organisasjonsform</label><select id="org-type"><option>ENK</option><option>AS</option><option>ASA</option><option>ANS</option><option>DA</option><option>SA</option><option>NUF</option><option>FORENING</option><option>STIFTELSE</option><option>ANNET</option></select></div>
+    <div><label for="org-number">Org.nr. (valgfritt)</label><input id="org-number" inputmode="numeric" maxlength="9" pattern="[0-9]{9}" placeholder="9 siffer"></div>
+    <div class="full"><label for="greeting">Velkomstmelding</label><textarea id="greeting" maxlength="240" rows="2"></textarea></div>
+    <div><label for="open-hour">Åpner</label><input id="open-hour" type="time" required></div>
+    <div><label for="close-hour">Stenger</label><input id="close-hour" type="time" required></div>
+    <div><label for="forward-number">Viderekobling</label><input id="forward-number" type="tel" placeholder="+47…" inputmode="tel"></div>
+    <div><label for="fallback-number">Reservelinje</label><input id="fallback-number" type="tel" placeholder="+47…" inputmode="tel"></div>
+    <div class="full"><label class="toggle-row"><span><strong>Aktiver ringeflyt i demo</strong><small>Påvirker bare forhåndsvisningen – ikke faktiske samtaler.</small></span><input id="switch-enabled" type="checkbox"><span class="toggle"></span></label></div>
+    <div class="full form-actions"><button class="primary-button" type="submit"><i data-lucide="save"></i> Lagre demooppsett</button><button type="button" id="reset-btn" class="outline-button"><i data-lucide="rotate-ccw"></i> Tilbakestill</button></div>
+   </form>
+   <div id="settings-result" class="feedback" role="status" aria-live="polite"></div>
+  </section>
+  <section class="panel" aria-labelledby="team-title">
+   <div class="section-heading"><div><p class="eyebrow">02 / SAMARBEID</p><h2 id="team-title">Team og tilgang</h2></div><span class="pill">Demoinvitasjoner</span></div>
+   <p class="hint">Fordel ansvar: eier, administrator, medarbeider og lesetilgang. Ingen invitasjon sendes fra demoen.</p>
+   <form id="invite-form" class="invite-row"><label class="visually-hidden" for="invite-email">E-postadresse</label><input id="invite-email" type="email" required placeholder="kollega@bedrift.no"><label class="visually-hidden" for="invite-role">Rolle</label><select id="invite-role"><option value="agent">Medarbeider</option><option value="admin">Administrator</option><option value="viewer">Lesetilgang</option></select><button type="submit" class="primary-button"><i data-lucide="user-plus"></i> Legg til</button></form>
+   <div id="team-list" class="team-list" role="list"></div>
+  </section>
+  <section class="panel" aria-labelledby="features-title">
+   <div class="section-heading"><div><p class="eyebrow">03 / FORDELER</p><h2 id="features-title">10 grunner til å bli</h2></div><span id="features-total" class="pill">10 funksjoner</span></div>
+   <p class="hint">Filter viser hva som kan prøves i panelet, og hvilke telefonifunksjoner som krever leverandørintegrasjon.</p>
+   <div class="feature-toolbar"><label class="search-box"><i data-lucide="search"></i><input id="feature-search" type="search" placeholder="Søk i funksjoner" aria-label="Søk i funksjoner"></label><select id="feature-filter" aria-label="Filtrer funksjoner"><option value="all">Alle</option><option value="demo">Kan prøves</option><option value="planned">Under utvikling</option></select></div>
+   <div id="features-grid" class="features-grid"></div>
+  </section>
+ </div>
+ <aside class="side-column">
+   <section class="device-panel" aria-labelledby="phone-title">
+     <div class="section-heading"><div><p class="eyebrow">LIVE PREVIEW</p><h2 id="phone-title">Telefonen din</h2></div><i data-lucide="smartphone"></i></div>
+     <p class="hint">3D-inspirert forhåndsvisning. Flytt musepekeren over mobilen på større skjermer.</p>
+     <div class="phone-stage" id="phone-stage">
+      <div class="phone-orbit orbit-one"></div><div class="phone-orbit orbit-two"></div>
+      <div class="phone-shell" id="phone-shell">
+       <div class="phone-screen">
+        <div class="dynamic-island"></div>
+        <div class="phone-status"><strong>9:41</strong><span>●●●</span></div>
+        <div class="phone-brand">vedoy<span>phone</span><i data-lucide="signal"></i></div>
+        <div class="phone-main"><small>MIN BEDRIFTSLINJE</small><strong id="phone-company">Min bedrift AS</strong><span id="phone-flow">Sentralbord · Demo</span></div>
+        <div class="phone-call"><div class="caller-icon"><i data-lucide="user-round"></i></div><div><small>FORHÅNDSVISNING</small><strong id="phone-greeting">Velkommen!</strong></div></div>
+        <div class="phone-keys"><div><i data-lucide="grid-2x2"></i> Hjem</div><div><i data-lucide="contact-round"></i> Kontakter</div><div><i data-lucide="phone"></i> Ring</div></div>
+       </div>
+      </div>
+     </div>
+     <p class="fine" style="text-align:center">Dette er en animert modell, ikke en fungerende mobilklient.</p>
+   </section>
+   <section class="panel" aria-labelledby="changelog-title">
+    <div class="section-heading"><div><p class="eyebrow">04 / HISTORIKK</p><h2 id="changelog-title">Oppdateringer</h2></div><i data-lucide="git-pull-request"></i></div>
+    <div class="history-switch"><button class="active" type="button" data-history="demo" aria-pressed="true">Min aktivitet</button><button type="button" data-history="releases" aria-pressed="false">Utviklingslogg</button></div>
+    <div id="demo-log" class="timeline"></div><div id="release-log" class="timeline" hidden></div>
+    <div class="form-actions"><button class="outline-button" type="button" id="export-btn"><i data-lucide="download"></i> Eksporter demooppsett</button><button class="outline-button" type="button" id="clear-log-btn"><i data-lucide="trash-2"></i> Tøm logg</button></div>
+   </section>
+   <section class="panel"><p class="eyebrow">05 / SIKKERHET</p><h2>Før en ekte lansering</h2><ul class="security-list"><li><i data-lucide="check-circle-2"></i> Sikker rollemodell i API</li><li><i data-lucide="database"></i> Neon-migrasjoner og loggføring</li><li><i data-lucide="shield-alert"></i> Sterk pålogging / MFA mangler</li><li><i data-lucide="plug-zap"></i> Telnyx-ruting må testes</li></ul></section>
+ </aside></div>
+</section>
+</main>
+<footer class="footer"><span>Vedoy Phone Admin Studio · Demo · Ingen kundedata</span><a href="/">Til Vedoy Phone <i data-lucide="arrow-up-right"></i></a></footer>
+</body></html>
