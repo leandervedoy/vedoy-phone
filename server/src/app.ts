@@ -8,6 +8,8 @@ import { numbers } from './numbers.js';
 import { messages, twilioSms } from './messages.js';
 import { voice, twilioVoice } from './voice.js';
 import { kyc } from './kyc.js';
+import { contacts } from './contacts.js';
+import { switchboard } from './switchboard.js';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -27,7 +29,9 @@ app.use('/webhooks/twilio', express.urlencoded({ extended: false, limit: '64kb' 
 app.use(express.json({ limit: '32kb' }));
 app.get('/health', (_req, res) => res.status(missingLiveConfig.length ? 503 : 200).json({ ok: missingLiveConfig.length === 0, service: 'vedoy-phone-api', missingConfiguration: missingLiveConfig }));
 app.use((req, res, next) => {
-  if (!missingLiveConfig.length) return next();
+  const needsTelephony = req.path.startsWith('/v1/voice') || req.path.startsWith('/v1/numbers') || req.path.startsWith('/v1/messages') || req.path.startsWith('/webhooks/twilio');
+  const missingCore = ['DATABASE_URL','NEON_AUTH_BASE_URL'].filter(key => !process.env[key]);
+  if (!(needsTelephony ? missingLiveConfig.length : missingCore.length)) return next();
   res.status(503).json({ message: 'Telefonitjenesten er ikke konfigurert ennå.', missingConfiguration: missingLiveConfig });
 });
 const apiLimit = rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: true, legacyHeaders: false });
@@ -36,6 +40,8 @@ app.use('/v1/numbers', numbers);
 app.use('/v1/messages', messages);
 app.use('/v1/voice', voice);
 app.use('/v1/kyc', kyc);
+app.use('/v1/contacts', contacts);
+app.use('/v1/switchboard', switchboard);
 app.use('/webhooks/twilio/voice', twilioVoice);
 app.use('/webhooks/twilio/sms', twilioSms);
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
