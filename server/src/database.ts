@@ -45,8 +45,8 @@ class Query implements PromiseLike<Result> {
         if(this.countMode){const c=await db.query(`SELECT count(*)::int AS n FROM ${table}${where}`,this.params);count=c.rows[0]?.n??0;}
         if(this.head)return {data:null,error:null,count};
         let sql=`SELECT ${columns(this.projection)} FROM ${table}${where}${this.sort}`;
-        const p=[...this.params];if(this.rowLimit!==undefined)sql+=` LIMIT ${this.bind(this.rowLimit)}`;
-        const result=await db.query(sql,p);
+        const p=[...this.params];if(this.rowLimit!==undefined)sql+=` LIMIT ${p.length+1}`;
+        const result=await db.query(sql,this.rowLimit!==undefined?[...p,this.rowLimit]:p);
         if(this.singleMode==='single'&&result.rows.length!==1)return {data:null,error:new Error(result.rows.length?'Expected one row':'Row not found')};
         return {data:this.singleMode?result.rows[0]??null:result.rows,error:null,...(this.countMode?{count}: {})};
       }
@@ -60,8 +60,30 @@ class Query implements PromiseLike<Result> {
         if(this.action==='upsert')sql+=` ON CONFLICT (${(this.conflict??'').split(',').map(x=>safeIdentifier(x.trim())).join(',')}) DO UPDATE SET ${assignments.join(',')}`;
         if(this.returnRows)sql+=` RETURNING ${columns(this.projection)}`;
       }else{
-        this.params=[];const set=keys.map((k,i)=>`${safeIdentifier(k)}=$${i+1}${jsonColumns.has(k)?'::jsonb':''}`).join(',');this.params=pvals;
-        sql=`UPDATE ${table} SET ${set}${this.where()}${this.returnRows?` RETURNING ${columns(this.projection)}`:''}`;
+        const filterParams=[...this.params];
+        const filterSql=this.filters.map(f=>f.replace(/\$(\d+)/g,(_,n)=>'
+      return {data:this.returnRows?(this.singleMode?result.rows[0]??null:result.rows):null,error:null};
+    } catch(error) { return {data:null,error}; }
+  }
+  then<TResult1=Result,TResult2=never>(onfulfilled?:((value:Result)=>TResult1|PromiseLike<TResult1>)|null,onrejected?:((reason:any)=>TResult2|PromiseLike<TResult2>)|null):Promise<TResult1|TResult2>{return this.execute().then(onfulfilled,onrejected);}
+}
+
+export const phoneDb={from:(table:string)=>new Query(table),rpc:async(name:string,args:Row):Promise<Result>=>{
+  if(name!=='reserve_phone_number')return {data:null,error:new Error('Unknown database operation')};
+  const client=await db.connect();
+  try { await client.query('BEGIN');
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[args.p_user_id]);
+    const lock=await client.query("SELECT count(*)::int AS total FROM phone_numbers WHERE user_id=$1 AND status IN ('active','pending')",[args.p_user_id]);
+    if(lock.rows[0].total>=args.p_max)throw new Error(`number_limit: Kontogrensen er ${args.p_max} aktive numre.`);
+    const ins=await client.query(`INSERT INTO phone_numbers(user_id,phone_number,country_code,number_type,capabilities,status) VALUES($1,$2,$3,$4,$5::jsonb,'pending') RETURNING id`,[args.p_user_id,args.p_phone_number,args.p_country_code,args.p_number_type,JSON.stringify(args.p_capabilities)]);
+    await client.query('COMMIT');return {data:ins.rows[0].id,error:null};
+  }catch(error){await client.query('ROLLBACK');return {data:null,error};}finally{client.release();}
+}};
++(Number(n)+keys.length)));
+        const where=filterSql.length?' WHERE '+filterSql.map(f=>'('+f+')').join(' AND '):'';
+        const set=keys.map((k,i)=>`${safeIdentifier(k)}=${i+1}${jsonColumns.has(k)?'::jsonb':''}`).join(',');
+        sql=`UPDATE ${table} SET ${set}${where}${this.returnRows?` RETURNING ${columns(this.projection)}`:''}`;
+        this.params=[...pvals,...filterParams];
       }
       const result=await db.query(sql,this.action==='update'?this.params:pvals);
       return {data:this.returnRows?(this.singleMode?result.rows[0]??null:result.rows):null,error:null};

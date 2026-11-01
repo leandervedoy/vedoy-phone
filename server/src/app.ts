@@ -10,6 +10,7 @@ import { voice, twilioVoice } from './voice.js';
 import { kyc } from './kyc.js';
 import { contacts } from './contacts.js';
 import { switchboard } from './switchboard.js';
+import {auditRouter} from './audit.js';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -42,6 +43,7 @@ app.use('/v1/voice', voice);
 app.use('/v1/kyc', kyc);
 app.use('/v1/contacts', contacts);
 app.use('/v1/switchboard', switchboard);
+app.use('/v1/audit', auditRouter);
 app.use('/webhooks/twilio/voice', twilioVoice);
 app.use('/webhooks/twilio/sms', twilioSms);
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
