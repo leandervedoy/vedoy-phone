@@ -3,6 +3,7 @@ import {createHash,randomBytes} from 'node:crypto';
 import {z} from 'zod';
 import {db} from './clients.js';
 import {asyncRoute} from './http.js';
+import {auditEventInTx} from './audit.js';
 
 export const switchboard=Router();
 const id=z.string().uuid();
@@ -25,6 +26,7 @@ switchboard.post('/',asyncRoute(async(req,res)=>{
  const orgId=r.rows[0].id;
  await client.query("INSERT INTO phone.organization_members(organization_id,user_id,role) VALUES($1,$2,'owner')",[orgId,req.userId]);
  await client.query('INSERT INTO phone.switchboard_settings(organization_id) VALUES($1)',[orgId]);
+ await auditEventInTx(client,req,'organization.created',orgId,'organization',orgId,{organization_type:p.data.organization_type});
  await client.query('COMMIT');res.status(201).json({organization:r.rows[0]});
  }catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}
 }));
@@ -43,8 +45,16 @@ switchboard.patch('/:id',asyncRoute(async(req,res)=>{
  if(!await access(orgId,req.userId!,['owner','admin']))return res.sendStatus(403);
  const p=settings.safeParse(req.body);if(!p.success)return res.status(400).json({message:'Ugyldig ringeflyt. Kontroller nummer og åpningstider.'});
  const s=p.data;
- const r=await db.query(`UPDATE phone.switchboard_settings SET greeting=$2,forwarding_number=$3,fallback_number=$4,opening_hour=$5,closing_hour=$6,enabled=$7,updated_at=now() WHERE organization_id=$1 RETURNING *`,[orgId,s.greeting,s.forwarding_number,s.fallback_number,s.opening_hour,s.closing_hour,s.enabled]);
- res.json({settings:r.rows[0],note:'Innstillingene er lagret. Aktiv trafikkruting krever tilknyttet, verifisert Telnyx-linje.'});
+ if(s.enabled)return res.status(409).json({message:'Aktivering av reell telefoniruting er sperret til nummer, nødtelefonikrav og integrasjon er testet.'});
+ const client=await db.connect();
+ try {
+  await client.query('BEGIN');
+  const r=await client.query(`UPDATE phone.switchboard_settings SET greeting=$2,forwarding_number=$3,fallback_number=$4,opening_hour=$5,closing_hour=$6,enabled=false,updated_at=now() WHERE organization_id=$1 RETURNING greeting,forwarding_number,fallback_number,opening_hour,closing_hour,timezone,enabled,updated_at`,[orgId,s.greeting,s.forwarding_number,s.fallback_number,s.opening_hour,s.closing_hour]);
+  if(!r.rows.length){await client.query('ROLLBACK');return res.sendStatus(404)}
+  await auditEventInTx(client,req,'switchboard.updated',orgId,'switchboard',orgId,{fields:['greeting','forwarding_number','fallback_number','opening_hour','closing_hour','enabled']});
+  await client.query('COMMIT');
+  return res.json({settings:r.rows[0],note:'Oppsett lagret. Reell trafikkruting er ikke aktivert.'});
+ }catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}
 }));
 switchboard.post('/:id/invitations',asyncRoute(async(req,res)=>{
  const orgId=String(req.params.id);if(!id.safeParse(orgId).success)return res.sendStatus(400);
@@ -52,7 +62,12 @@ switchboard.post('/:id/invitations',asyncRoute(async(req,res)=>{
  const p=z.object({email:z.email().max(254),role:z.enum(['admin','agent','viewer'])}).safeParse(req.body);
  if(!p.success)return res.sendStatus(400);
  const token=randomBytes(24).toString('base64url'),hash=createHash('sha256').update(token).digest('hex');
- await db.query('INSERT INTO phone.organization_invitations(organization_id,email,role,token_hash,created_by) VALUES($1,$2,$3,$4,$5)',[orgId,p.data.email.toLowerCase(),p.data.role,hash,req.userId]);
+ const client=await db.connect();
+ try{await client.query('BEGIN');
+ const inserted=await client.query('INSERT INTO phone.organization_invitations(organization_id,email,role,token_hash,created_by) VALUES($1,$2,$3,$4,$5) RETURNING id',[orgId,p.data.email.toLowerCase(),p.data.role,hash,req.userId]);
+ await auditEventInTx(client,req,'invitation.created',orgId,'invitation',inserted.rows[0].id,{role:p.data.role});
+ await client.query('COMMIT');
+ }catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}
  // Invitation must be delivered by a separate trusted channel; not emailed automatically.
  res.status(201).json({invite_code:token,expires_in_days:7});
 }));
@@ -68,6 +83,7 @@ switchboard.post('/invitations/accept',asyncRoute(async(req,res)=>{
  if(!invite||invite.email.toLowerCase()!==req.userEmail.toLowerCase()){await client.query('ROLLBACK');return res.status(403).json({message:'Invitasjonen er ugyldig eller knyttet til en annen e-post.'});}
  await client.query('INSERT INTO phone.organization_members(organization_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[invite.organization_id,req.userId,invite.role]);
  await client.query('UPDATE phone.organization_invitations SET accepted_at=now() WHERE id=$1',[invite.id]);
+ await auditEventInTx(client,req,'invitation.accepted',invite.organization_id,'invitation',invite.id,{role:invite.role});
  await client.query('COMMIT');res.json({organization_id:invite.organization_id});
  }catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}
 }));
@@ -75,6 +91,11 @@ switchboard.delete('/:id/members/:userId',asyncRoute(async(req,res)=>{
  const orgId=String(req.params.id);if(!id.safeParse(orgId).success)return res.sendStatus(400);
  if(!await access(orgId,req.userId!,['owner']))return res.sendStatus(403);
  const target=String(req.params.userId);
- const r=await db.query("DELETE FROM phone.organization_members WHERE organization_id=$1 AND user_id=$2 AND role<>'owner' RETURNING user_id",[orgId,target]);
- if(!r.rows.length)return res.sendStatus(404);res.sendStatus(204);
+ const client=await db.connect();
+ try{await client.query('BEGIN');
+ const r=await client.query("DELETE FROM phone.organization_members WHERE organization_id=$1 AND user_id=$2 AND role<>'owner' RETURNING user_id",[orgId,target]);
+ if(!r.rows.length){await client.query('ROLLBACK');return res.sendStatus(404)}
+ await auditEventInTx(client,req,'member.removed',orgId,'member',target);
+ await client.query('COMMIT');return res.sendStatus(204);
+ }catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}
 }));
