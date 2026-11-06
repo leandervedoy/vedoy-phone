@@ -8,6 +8,7 @@ import { numbers } from './numbers.js';
 import { messages, twilioSms } from './messages.js';
 import { voice, twilioVoice } from './voice.js';
 import { kyc } from './kyc.js';
+import { phoneNumberPrices } from './pricing.js';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -31,6 +32,24 @@ app.use((req, res, next) => {
   res.status(503).json({ message: 'Telefonitjenesten er ikke konfigurert ennå.', missingConfiguration: missingLiveConfig });
 });
 const apiLimit = rateLimit({ windowMs: 60_000, limit: 120, standardHeaders: true, legacyHeaders: false });
+app.get('/v1/public/pricing', rateLimit({ windowMs: 60_000, limit: 30, standardHeaders: true, legacyHeaders: false }), async (req, res) => {
+  const country = String(req.query.country ?? 'NO').toUpperCase();
+  if (!['NO', 'US', 'CA'].includes(country)) return res.status(400).json({ message: 'Landet er ikke støttet i prislisten.' });
+  try {
+    const raw = await phoneNumberPrices(country);
+    const prices = Object.entries(raw).filter(([type]) => ['local', 'mobile', 'tollFree'].includes(type)).map(([type, price]) => {
+      const cost = Number(price.monthlyPrice);
+      if (!Number.isFinite(cost) || cost < 0) return null;
+      // 20% gross margin: (sales price - provider cost) / sales price = 0.20
+      const customerPrice = Math.ceil((cost / 0.8) * 100) / 100;
+      return { type, currency: price.currency, twilioMonthlyPrice: cost.toFixed(2), customerMonthlyPrice: customerPrice.toFixed(2), marginPercent: 20 };
+    }).filter(Boolean);
+    res.setHeader('Cache-Control', 'public, max-age=300');
+    res.json({ country, prices, source: 'Twilio Pricing API', fetchedAt: new Date().toISOString(), note: 'Månedspris per nummer, eksklusive avgifter, bruk og eventuelle tillegg. Kjøp er ikke aktivert.' });
+  } catch {
+    res.status(503).json({ message: 'Livepriser fra Twilio er ikke tilgjengelige akkurat nå.' });
+  }
+});
 app.use('/v1', apiLimit, requireAuth);
 app.use('/v1/numbers', numbers);
 app.use('/v1/messages', messages);
