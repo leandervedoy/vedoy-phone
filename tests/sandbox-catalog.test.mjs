@@ -9,7 +9,7 @@ test('shows exactly five unique fake choices for each supported category', () =>
       assert.equal(offers.length, 5);
       assert.equal(new Set(offers.map(o => o.label)).size, 5);
       assert.ok(offers.every(o => o.label.startsWith('TEST-')));
-      assert.ok(offers.every(o => !/^\\+\\d+$/.test(o.label)));
+      assert.ok(offers.every(o => !o.label.startsWith('+')));
       assert.ok(offers.every(o => o.priceCredits === SANDBOX_NUMBER_PRICE));
     }
   }
