@@ -38,7 +38,7 @@ jobs:
           node --input-type=module <<'NODE'
           import {readFileSync, writeFileSync} from 'node:fs';
           const html = readFileSync('public/sandbox.html', 'utf8');
-          const source = html.match(/<script type="module">([\\s\\S]*?)<\\/script>/)?.[1];
+          const source = html.split('<script type="module">')[1]?.split('</script>')[0];
           if (!source || !source.includes("from '/sandbox-catalog.mjs'")) {
             throw new Error('Sandbox must import its isolated catalog module.');
           }
