@@ -1,0 +1,150 @@
+name: Vedoy Phone native builds
+on:
+  push:
+    branches:
+      - feature/phone-pro-hosted-preview
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-native-builds.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vedoy-phone-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-apk:
+    name: Android APK (test signing)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Verify runner Android SDK
+        shell: bash
+        run: |
+          test -d "$ANDROID_HOME"
+          echo "Android SDK: $ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" || true
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Generate Android native project
+        run: npx expo prebuild --platform android --no-install --non-interactive
+      - name: Build release APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew :app:assembleRelease --no-daemon --stacktrace
+      - name: Verify or test-sign APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-artifacts
+          apk="$(find android/app/build/outputs/apk/release -maxdepth 1 -name '*.apk' -type f | head -n 1)"
+          if [ -z "$apk" ]; then echo "No APK produced"; exit 1; fi
+          tools_dir="$(find "${ANDROID_HOME}"/build-tools -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          if [ -z "$tools_dir" ]; then echo "Android build tools missing"; exit 1; fi
+          if "$tools_dir/apksigner" verify "$apk"; then
+            cp "$apk" build-artifacts/vedoy-phone-android-test.apk
+          else
+            echo "Release APK unsigned; applying ephemeral test-only signature."
+            keytool -genkeypair -v -keystore /tmp/vedoy-ci-test.jks -storepass changeit -keypass changeit -alias vedoy-test -keyalg RSA -keysize 3072 -validity 30 -dname "CN=Vedoy Phone CI Test"
+            "$tools_dir/zipalign" -p -f 4 "$apk" build-artifacts/aligned.apk
+            "$tools_dir/apksigner" sign --ks /tmp/vedoy-ci-test.jks --ks-pass pass:changeit --key-pass pass:changeit --ks-key-alias vedoy-test --out build-artifacts/vedoy-phone-android-test.apk build-artifacts/aligned.apk
+            rm -f build-artifacts/aligned.apk /tmp/vedoy-ci-test.jks
+          fi
+          "$tools_dir/apksigner" verify --verbose build-artifacts/vedoy-phone-android-test.apk
+          sha256sum build-artifacts/vedoy-phone-android-test.apk > build-artifacts/SHA256SUMS.txt
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: vedoy-phone-android-apk
+          path: mobile/build-artifacts/vedoy-phone-android-test.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: vedoy-phone-android-sha256
+          path: mobile/build-artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  ios-simulator:
+    name: iOS Simulator app (unsigned)
+    runs-on: macos-26
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - name: Checkout reviewed source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Generate iOS native project
+        run: npx expo prebuild --platform ios --no-install --non-interactive
+      - name: Install CocoaPods
+        env:
+          LANG: en_US.UTF-8
+          LC_ALL: en_US.UTF-8
+        run: |
+          cd ios
+          pod install --repo-update
+      - name: Build unsigned iOS Simulator app
+        shell: bash
+        env:
+          LANG: en_US.UTF-8
+          LC_ALL: en_US.UTF-8
+        run: |
+          set -euo pipefail
+          workspace="$(find ios -maxdepth 1 -name '*.xcworkspace' -print -quit)"
+          if [ -z "$workspace" ]; then echo "No Xcode workspace"; exit 1; fi
+          scheme="$(xcodebuild -list -json -workspace "$workspace" | jq -r '.workspace.schemes[] | select(startswith("Pods-") | not)' | head -n 1)"
+          if [ -z "$scheme" ]; then echo "No app scheme"; exit 1; fi
+          xcodebuild -workspace "$workspace" -scheme "$scheme" -configuration Release -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO -derivedDataPath ios/build build -quiet
+      - name: Package simulator .app
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build-artifacts
+          app="$(find ios/build/Build/Products/Release-iphonesimulator -maxdepth 1 -name '*.app' -type d -print -quit)"
+          if [ -z "$app" ]; then echo "No iOS Simulator .app produced"; exit 1; fi
+          ditto -c -k --sequesterRsrc --keepParent "$app" build-artifacts/vedoy-phone-ios-simulator.app.zip
+          shasum -a 256 build-artifacts/vedoy-phone-ios-simulator.app.zip > build-artifacts/SHA256SUMS-ios.txt
+      - name: Upload iOS Simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: vedoy-phone-ios-simulator
+          path: |
+            mobile/build-artifacts/vedoy-phone-ios-simulator.app.zip
+            mobile/build-artifacts/SHA256SUMS-ios.txt
+          if-no-files-found: error
+          retention-days: 14

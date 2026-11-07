@@ -1,0 +1,47 @@
+name: Vedoy Phone Sandbox Checks
+
+on:
+  push:
+    branches:
+      - feature/phone-pro-hosted-preview
+    paths:
+      - 'public/sandbox.html'
+      - 'public/sandbox-catalog.mjs'
+      - 'tests/sandbox-catalog.test.mjs'
+      - '.github/workflows/sandbox-checks.yml'
+  pull_request:
+    paths:
+      - 'public/sandbox.html'
+      - 'public/sandbox-catalog.mjs'
+      - 'tests/sandbox-catalog.test.mjs'
+      - '.github/workflows/sandbox-checks.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  sandbox:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Show Node version
+        run: node --version
+      - name: Validate catalog syntax and logic
+        run: |
+          node --check public/sandbox-catalog.mjs
+          node --test tests/sandbox-catalog.test.mjs
+      - name: Check module script syntax
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFileSync, writeFileSync} from 'node:fs';
+          const html = readFileSync('public/sandbox.html', 'utf8');
+          const source = html.split('<script type="module">')[1]?.split('</script>')[0];
+          if (!source || !source.includes("from '/sandbox-catalog.mjs'")) {
+            throw new Error('Sandbox must import its isolated catalog module.');
+          }
+          writeFileSync('/tmp/vedoy-phone-inline.mjs', source);
+          NODE
+          node --check /tmp/vedoy-phone-inline.mjs
