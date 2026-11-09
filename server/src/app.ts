@@ -7,6 +7,7 @@ import { requireAuth } from './auth.js';
 import { numbers } from './numbers.js';
 import { messages, twilioSms } from './messages.js';
 import { voice, twilioVoice } from './voice.js';
+import { pbxAdmin, pbxWebhook } from './pbx.js';
 import { kyc } from './kyc.js';
 
 export const app = express();
@@ -35,8 +36,10 @@ app.use('/v1', apiLimit, requireAuth);
 app.use('/v1/numbers', numbers);
 app.use('/v1/messages', messages);
 app.use('/v1/voice', voice);
+app.use('/v1/pbx', pbxAdmin);
 app.use('/v1/kyc', kyc);
 app.use('/webhooks/twilio/voice', twilioVoice);
+app.use('/webhooks/twilio/voice', pbxWebhook);
 app.use('/webhooks/twilio/sms', twilioSms);
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('request_failed', err instanceof Error ? { name: err.name, message: env.NODE_ENV === 'production' ? 'redacted' : err.message } : err);
