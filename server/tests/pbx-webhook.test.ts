@@ -64,7 +64,7 @@ await new Promise<void>(resolve => server.once('listening', resolve));
 const port = (server.address() as {port:number}).port;
 const targetPath = '/webhooks/twilio/voice/pbx-menu';
 // Middleware reconstructs the externally configured URL, not the local test port.
-const signatureUrl = env.PUBLIC_BASE_URL.replace(/\\/$/, '') + targetPath;
+const signatureUrl = env.PUBLIC_BASE_URL.replace(/\/$/, '') + targetPath;
 function reset() { enabled = true; stored = new Set(); total = 0; failTransaction = false; migrationMissing = false; insertedDigits = []; }
 async function send(params: Record<string,string>, signed = true, signatureOverride?: string) {
   const body = new URLSearchParams(params).toString();
