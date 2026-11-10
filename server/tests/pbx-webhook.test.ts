@@ -31,10 +31,11 @@ let insertedDigits: string[] = [];
 
 function mockDatabase() {
   // Never connect to a real database. Each fake client serializes the scenario.
-  (db as any).query = async (sql: string) => {
+  (db as any).query = async (sql: string, params: unknown[] = []) => {
     if (sql.includes('FROM phone.pbx_menus')) {
       if (migrationMissing) throw Object.assign(new Error('relation missing'), {code:'42P01'});
-      return { rows: enabled ? [menu] : [], rowCount: enabled ? 1 : 0 };
+      const active = enabled && sql.includes('p.phone_number=$1') && params[0] === destination;
+      return { rows: active ? [menu] : [], rowCount: active ? 1 : 0 };
     }
     throw new Error('Unexpected pool query: ' + sql);
   };
@@ -146,4 +147,11 @@ test('missing PBX migration preserves legacy inbound routing', async () => {
   reset(); migrationMissing=true;
   const res = {type(){return this;},send(){return this;}} as any;
   assert.equal(await maybeHandlePbxInbound(destination,res), false);
+});
+
+test('unowned destination has no active PBX menu', async () => {
+  reset();
+  const r=await send({...valid,To:'+4798765432'});
+  assert.equal(r.status,200); assert.doesNotMatch(r.xml,/<Dial/);
+  assert.equal(total,0);
 });
