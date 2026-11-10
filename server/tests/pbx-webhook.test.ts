@@ -26,12 +26,14 @@ let enabled = true;
 let stored = new Set<string>();
 let total = 0;
 let failTransaction = false;
+let migrationMissing = false;
 let insertedDigits: string[] = [];
 
 function mockDatabase() {
   // Never connect to a real database. Each fake client serializes the scenario.
   (db as any).query = async (sql: string) => {
     if (sql.includes('FROM phone.pbx_menus')) {
+      if (migrationMissing) throw Object.assign(new Error('relation missing'), {code:'42P01'});
       return { rows: enabled ? [menu] : [], rowCount: enabled ? 1 : 0 };
     }
     throw new Error('Unexpected pool query: ' + sql);
@@ -63,7 +65,7 @@ const port = (server.address() as {port:number}).port;
 const targetPath = '/webhooks/twilio/voice/pbx-menu';
 // Middleware reconstructs the externally configured URL, not the local test port.
 const signatureUrl = env.PUBLIC_BASE_URL.replace(/\\/$/, '') + targetPath;
-function reset() { enabled = true; stored = new Set(); total = 0; failTransaction = false; insertedDigits = []; }
+function reset() { enabled = true; stored = new Set(); total = 0; failTransaction = false; migrationMissing = false; insertedDigits = []; }
 async function send(params: Record<string,string>, signed = true, signatureOverride?: string) {
   const body = new URLSearchParams(params).toString();
   const sig = signatureOverride ?? twilio.getExpectedTwilioSignature(env.TWILIO_AUTH_TOKEN, signatureUrl, params);
@@ -138,4 +140,10 @@ test('inactive PBX preserves original flow dispatch condition', async () => {
   reset(); enabled=false;
   const res = {type(){return this;},send(){return this;}} as any;
   assert.equal(await maybeHandlePbxInbound(destination,res),false);
+});
+
+test('missing PBX migration preserves legacy inbound routing', async () => {
+  reset(); migrationMissing=true;
+  const res = {type(){return this;},send(){return this;}} as any;
+  assert.equal(await maybeHandlePbxInbound(destination,res), false);
 });
