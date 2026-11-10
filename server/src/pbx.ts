@@ -73,13 +73,21 @@ pbxAdmin.put('/config', asyncRoute(async (req, res) => {
 }));
 
 async function activeMenu(number: string): Promise<Menu | null> {
-  const result = await db.query(
-    "SELECT p.user_id,p.phone_number,p.enabled,p.greeting,p.departments FROM phone.pbx_menus p " +
-    "JOIN phone.phone_numbers n ON n.user_id=p.user_id AND n.phone_number=p.phone_number " +
-    "WHERE p.phone_number=$1 AND p.enabled=true AND n.status='active' " +
-    "AND n.capabilities->>'voice'='true' LIMIT 1",
-    [number],
-  );
+  let result;
+  try {
+    result = await db.query(
+      "SELECT p.user_id,p.phone_number,p.enabled,p.greeting,p.departments FROM phone.pbx_menus p " +
+      "JOIN phone.phone_numbers n ON n.user_id=p.user_id AND n.phone_number=p.phone_number " +
+      "WHERE p.phone_number=$1 AND p.enabled=true AND n.status='active' " +
+      "AND n.capabilities->>'voice'='true' LIMIT 1",
+      [number],
+    );
+  } catch (error) {
+    // During a staged rollout the optional PBX migration might not exist yet.
+    // Fail open ONLY for missing table/schema; never swallow other database failures.
+    if ((error as {code?: string})?.code === '42P01' || (error as {code?: string})?.code === '3F000') return null;
+    throw error;
+  }
   const row = result.rows[0];
   if (!row) return null;
   const checked = menuSchema.safeParse({
