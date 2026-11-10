@@ -110,7 +110,7 @@ export async function maybeHandlePbxInbound(number: string, res: Response): Prom
   const gather = response.gather({
     action: base + '/webhooks/twilio/voice/pbx-menu',
     method: 'POST',
-    input: 'dtmf',
+    input: ['dtmf'],
     timeout: 7,
     numDigits: 1,
     actionOnEmptyResult: true,
