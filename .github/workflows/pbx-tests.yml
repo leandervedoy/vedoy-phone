@@ -1,0 +1,29 @@
+name: PBX isolated verification
+on:
+  pull_request:
+    paths:
+      - 'server/**'
+      - '.github/workflows/pbx-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pbx:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: server
+    env:
+      NODE_ENV: test
+      PUBLIC_BASE_URL: https://pbx-test.invalid
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm test
